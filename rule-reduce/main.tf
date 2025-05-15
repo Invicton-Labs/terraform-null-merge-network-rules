@@ -1,22 +1,31 @@
 
 locals {
-  // Eliminate any exact duplicates (same JSON representation)
-  deduplicated = {
+  // Replace any singleton values with their primary equivalency
+  equivilencies = {
     for key, group in var.rule_sets :
     key => merge(group, {
-      rules = distinct([
-        for rule_json in [
-          for rule in group.rules :
-          jsonencode(rule)
-        ] :
-        // TODO: test deduplication
-        jsondecode(rule_json)
-      ])
+      rules = {
+        for rule_idx, rule in group.rules :
+        rule_idx => merge(rule, {
+          singletons = {
+            for sk, sv in rule.singletons :
+            // Create a list of all equivalent values, and
+            // add the current value at the end, then take the first index.
+            // This will ensure that if there's an equivalency, it gets used, but
+            // if not then the current value is used.
+            sk => concat([
+              for sek, sev in group.singleton_equivalents[sk] :
+              sek
+              if contains(sev, sv)
+            ], [sv])[0]
+          }
+        })
+      }
     })
   }
 
   with_encapsulations = {
-    for key, group in local.deduplicated :
+    for key, group in local.equivilencies :
     key => merge(group, {
       rules = {
         for rule_idx, rule in group.rules :
@@ -105,4 +114,6 @@ locals {
       ]
     })
   }
+
+  // TODO: merge rules where ranges are all contiguous
 }

@@ -5,6 +5,7 @@ variable "rule_sets" {
     object(
       {
         singleton_encapsulation = optional(map(map(list(any))), {})
+        singleton_equivalents   = optional(map(map(list(any))), {})
         rules = optional(list(object({
           ranges = optional(map(object({
             from_inclusive = number
@@ -16,6 +17,68 @@ variable "rule_sets" {
       }
     )
   )
+
+  // TODO:
+  // - Check for loops in the singleton encapsulation?
+  // - Useful output for each validation
+
+  // Ensure that no singleton equivalent type keys are in the associated values for the same singleton type
+  validation {
+    condition = 0 == length(flatten([
+      for key, group in var.rule_sets :
+      [
+        for sev in values(group.singleton_equivalents) :
+        null
+        // If any of the keys are found in any of the values, that's a problem
+        if length(setintersection(keys(sev), flatten([values(sev)]))) > 0
+      ]
+    ]))
+    error_message = "For each set, none of the keys in any `singleton_equivalents` map may be present in the values for that same map. The input does not meet this requirement: ${join(", ", [
+      for key, group in var.rule_sets :
+      "${key} - ${join(", ", [
+        for sek, sev in group.singleton_equivalents :
+        "${sek} (${join(", ", distinct(setintersection(keys(sev), flatten([values(sev)]))))})"
+        if length(setintersection(keys(sev), flatten([values(sev)]))) > 0
+      ])}"
+      if length(flatten([
+        for sev in values(group.singleton_equivalents) :
+        null
+        if length(setintersection(keys(sev), flatten([values(sev)]))) > 0
+      ])) > 0
+    ])}"
+  }
+
+  // Ensure that there are no singleton equivalent duplicates
+  validation {
+    condition = 0 == length(flatten([
+      for key, group in var.rule_sets :
+      [
+        for sev in values(group.singleton_equivalents) :
+        null
+        // It's invalid if the length of the distinct set is different than the length of the complete set,
+        // since that means that the complete set has duplicates.
+        if length(distinct(flatten([values(sev)]))) != length(flatten([values(sev)]))
+      ]
+    ]))
+    error_message = "For each set, the values in the `singleton_equivalents` map must not have any duplicates. The input does not meet this requirement: ${join(", ", [
+      for key, group in var.rule_sets :
+      "${key} - ${join(", ", [
+        for sek, sev in group.singleton_equivalents :
+        "${sek} (${join(", ", distinct([
+          for v in flatten([values(sev)]) :
+          v
+          // Count how many instances of this value there are. If there's more than 1, it's a duplicate.
+          if length([for v2 in flatten([values(sev)]) : v2 if v2 == v]) > 1
+        ]))})"
+        if length(distinct(flatten([values(sev)]))) != length(flatten([values(sev)]))
+      ])}"
+      if length(flatten([
+        for sev in values(group.singleton_equivalents) :
+        null
+        if length(distinct(flatten([values(sev)]))) != length(flatten([values(sev)]))
+      ])) > 0
+    ])}"
+  }
 
   // Ensure that the singleton encapsulation values are all valid
   validation {
@@ -40,6 +103,31 @@ variable "rule_sets" {
       ]) > 0
     ]) == 0
     error_message = "For each singleton encapsulation, the value must be a string, number, or boolean."
+  }
+
+  // Ensure that the singleton equivalents values are all valid
+  validation {
+    condition = length([
+      // Check each set
+      for key, group in var.rule_sets :
+      key
+      if length([
+        // Check each singleton encapsulation type
+        for singleton_name, singleton_equivalents in group.singleton_equivalents :
+        true
+        if length([
+          // Check each encapsulation
+          for singleton_equivalent in singleton_equivalents :
+          true
+          if length([
+            for equivalent in singleton_equivalent :
+            true
+            if can(keys(equivalent)) || can(anytrue(equivalent))
+          ]) > 0
+        ]) > 0
+      ]) > 0
+    ]) == 0
+    error_message = "For each singleton equivalent, the value must be a string, number, or boolean."
   }
 
   // Ensure that the singleton values are all valid
@@ -82,6 +170,27 @@ variable "rule_sets" {
       ]) > 0
     ]) == 0
     error_message = "For a given set, the key of every singleton must be in the `singleton_encapsulation` map. This is to help ensure there are no accidental key typos."
+  }
+
+  // Ensure that every singleton key is in the singleton_equivalents keys
+  validation {
+    condition = length([
+      // Check each set
+      for key, group in var.rule_sets :
+      key
+      if length([
+        // Check each rule
+        for rule in group.rules :
+        true
+        if length([
+          // Check each singleton in the rule
+          for sk, sv in rule.singletons :
+          true
+          if !contains(keys(group.singleton_equivalents), sk)
+        ]) > 0
+      ]) > 0
+    ]) == 0
+    error_message = "For a given set, the key of every singleton must be in the `singleton_equivalents` map. This is to help ensure there are no accidental key typos."
   }
 
   // Ensure that all items have the same range keys

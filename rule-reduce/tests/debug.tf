@@ -5,7 +5,17 @@ module "merge-ports" {
     set-0 = {
       singleton_encapsulation = {
         protocol = {
-          "tcp" = ["tcps"]
+          "*" = ["tcps"]
+        }
+      }
+      singleton_equivalents = {
+        protocol = {
+          6 = ["tcp"]
+          7 = ["udp"]
+        }
+        protocol2 = {
+          6 = [7]
+          8 = ["udp"]
         }
       }
       rules = [
