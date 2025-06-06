@@ -24,6 +24,7 @@ locals {
     })
   }
 
+// This adds to each rule a listing of all of the rules it encapuslates (rules that can be merged into it)
   with_encapsulations = {
     for key, group in local.equivilencies :
     key => merge(group, {
@@ -71,7 +72,7 @@ locals {
   // Do a forward pass to remove any rules that are encapsulated in a later rule.
   // We do this in two steps (forward, then reverse) so two equal rules don't
   // remove each other.
-  forward_pass_merge = {
+  forward_pass_encapsulate = {
     for key, group in local.with_encapsulations :
     key => merge(group, {
       rules = {
@@ -87,8 +88,8 @@ locals {
   }
 
   // Do a reverse pass to remove any rules that are encapsulated in a previous rule.
-  reverse_pass_merge = {
-    for key, group in local.forward_pass_merge :
+  reverse_pass_encapsulate = {
+    for key, group in local.forward_pass_encapsulate :
     key => merge(group, {
       rules = {
         for rule_idx, rule in group.rules :
@@ -101,6 +102,28 @@ locals {
       }
     })
   }
+
+  // For rules to be merged as contiguous, they must:
+  // - all singletons must be identical
+  // - For each range, it must be encapsulated in the one it is being compared with OR there must be no gap between end and start
+  with_contiguous = {
+    for key, group in local.reverse_pass_encapsulate :
+    key => merge(group, {
+      rules = {
+        for rule_idx, rule in group.rules :
+        rule_idx => merge(rule, {
+          subsequent_contiguous_with = {
+            for cmp_idx, cmp_rule in group.rules:
+
+            if cmp_idx != rule_idx ? (
+              
+            ) : false
+          }
+        })
+      }
+    })
+  }
+
 
   // Now clean it up for the final output format
   merged_rule_sets = {

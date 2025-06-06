@@ -15,27 +15,41 @@ run "cidr_merge_test" {
                 from_inclusive = 10
                 to_inclusive   = 20
               }
+              foo = {
+                from_inclusive = 122
+                to_inclusive   = 133
+              }
             }
             singletons = {
               protocol = "tcp"
             }
-            metadata = []
+            metadata = "something!"
           },
-          # {
-          #   ranges = {
-          #     ports = {
-          #       from_inclusive = 10
-          #       to_inclusive   = 30
-          #     }
-          #   }
-          #   singletons = {
-          #     protocol = ["abc"]
-          #   }
-          #   metadata = []
-          # },
+          {
+            ranges = {
+              foo = {
+                from_inclusive = 5
+                to_inclusive   = 600
+              }
+            }
+            singletons = {
+              protocol = "tcp"
+            }
+            metadata = [{
+              another = thing
+            }]
+          },
         ]
       }
     }
   }
+
+  # assert {
+  #   condition = output.merged_rule_sets = {
+  #     set-0 = {
+
+  #     }
+  #   }
+  # }
 
 }
