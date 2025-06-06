@@ -45,7 +45,7 @@ module "rule_reduce" {
 locals {
   // TODO: reconstruct CIDR
   reduced_rules = {
-    for key, group in module.rule_reduce.merged_rule_sets :
+    for key, group in module.rule_reduce.squashed_rule_sets :
     key => {
       rules = [
         for rule in group.rules :

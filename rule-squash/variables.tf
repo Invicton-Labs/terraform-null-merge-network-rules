@@ -20,8 +20,8 @@ discrete_equivalents = {
 }
 
 - `rules`: a list of the actual rules to be reduced. Each rule has:
-    - `ranges`: a map of range objects, where the key is the range type (e.g. "ports") and the value is an object with a `from_inclusive` and `to_inclusive`. `null` values for `from_inclusive` or `to_inclusive` represent negative and positive infinity, respectively.
     - `discretes`: a map of discrete values for the rule, where the key is the descrete type (e.g. "protocol") and the value is the descrete value (e.g. "tcp").
+    - `ranges`: a map of range objects, where the key is the range type (e.g. "ports") and the value is an object with a `from_inclusive` and `to_inclusive`. `null` values for `from_inclusive` or `to_inclusive` represent negative and positive infinity, respectively.
     - `metadata`: anything that your heart desires. When rules are merged/reduced, the final rules will contain the metadata of all rules that were reduced into that final rule. This is particularly helpful if you want to be able to generate text descriptions of what the final rules do, and this allows them to include descriptions or names of all of the rules that were reduced into it.
 EOF
   nullable    = false
@@ -31,12 +31,12 @@ EOF
         discrete_encapsulation = optional(map(map(list(any))), {})
         discrete_equivalents   = optional(map(map(list(any))), {})
         rules = optional(list(object({
+          discretes = optional(map(any), {})
           ranges = optional(map(object({
             from_inclusive = number
             to_inclusive   = number
           })), {})
-          discretes = optional(map(any), {})
-          metadata  = optional(map(any))
+          metadata = optional(map(any))
         })), [])
       }
     )
@@ -52,23 +52,23 @@ EOF
     condition = 0 == length(flatten([
       for key, group in var.rule_sets :
       [
-        for sev in values(group.discrete_equivalents) :
+        for dev in values(group.discrete_equivalents) :
         null
         // If any of the keys are found in any of the values, that's a problem
-        if length(setintersection(keys(sev), flatten([values(sev)]))) > 0
+        if length(setintersection(keys(dev), flatten([values(dev)]))) > 0
       ]
     ]))
     error_message = "For each set, none of the keys in any `discrete_equivalents` map may be present in the values for that same map. The input does not meet this requirement: ${join(", ", [
       for key, group in var.rule_sets :
       "${key} - ${join(", ", [
-        for sek, sev in group.discrete_equivalents :
-        "${sek} (${join(", ", distinct(setintersection(keys(sev), flatten([values(sev)]))))})"
-        if length(setintersection(keys(sev), flatten([values(sev)]))) > 0
+        for dek, dev in group.discrete_equivalents :
+        "${dek} (${join(", ", distinct(setintersection(keys(dev), flatten([values(dev)]))))})"
+        if length(setintersection(keys(dev), flatten([values(dev)]))) > 0
       ])}"
       if length(flatten([
-        for sev in values(group.discrete_equivalents) :
+        for dev in values(group.discrete_equivalents) :
         null
-        if length(setintersection(keys(sev), flatten([values(sev)]))) > 0
+        if length(setintersection(keys(dev), flatten([values(dev)]))) > 0
       ])) > 0
     ])}"
   }
@@ -78,29 +78,29 @@ EOF
     condition = 0 == length(flatten([
       for key, group in var.rule_sets :
       [
-        for sev in values(group.discrete_equivalents) :
+        for dev in values(group.discrete_equivalents) :
         null
         // It's invalid if the length of the distinct set is different than the length of the complete set,
         // since that means that the complete set has duplicates.
-        if length(distinct(flatten([values(sev)]))) != length(flatten([values(sev)]))
+        if length(distinct(flatten([values(dev)]))) != length(flatten([values(dev)]))
       ]
     ]))
     error_message = "For each set, the values in the `discrete_equivalents` map must not have any duplicates. The input does not meet this requirement: ${join(", ", [
       for key, group in var.rule_sets :
       "${key} - ${join(", ", [
-        for sek, sev in group.discrete_equivalents :
-        "${sek} (${join(", ", distinct([
-          for v in flatten([values(sev)]) :
+        for dek, dev in group.discrete_equivalents :
+        "${dek} (${join(", ", distinct([
+          for v in flatten([values(dev)]) :
           v
           // Count how many instances of this value there are. If there's more than 1, it's a duplicate.
-          if length([for v2 in flatten([values(sev)]) : v2 if v2 == v]) > 1
+          if length([for v2 in flatten([values(dev)]) : v2 if v2 == v]) > 1
         ]))})"
-        if length(distinct(flatten([values(sev)]))) != length(flatten([values(sev)]))
+        if length(distinct(flatten([values(dev)]))) != length(flatten([values(dev)]))
       ])}"
       if length(flatten([
-        for sev in values(group.discrete_equivalents) :
+        for dev in values(group.discrete_equivalents) :
         null
-        if length(distinct(flatten([values(sev)]))) != length(flatten([values(sev)]))
+        if length(distinct(flatten([values(dev)]))) != length(flatten([values(dev)]))
       ])) > 0
     ])}"
   }
@@ -256,13 +256,9 @@ EOF
           for range_key, range_value in rule.ranges :
           true
           if(
-            // If both are null, that's not a violation
-            (range_value.from_inclusive == null && range_value.to_inclusive == null) ? false : (
-              (
-                // If one is null and the other is not, that's a violation
-                (range_value.from_inclusive == null && range_value.to_inclusive != null) ||
-                (range_value.from_inclusive != null && range_value.to_inclusive == null)
-                ) ? true : (
+            // If one is null, that's fine
+            range_value.from_inclusive == null ? false : (
+              range_value.to_inclusive == null ? false : (
                 // They're both non-null, so if the to value is below the from value, that's a violation
                 range_value.to_inclusive < range_value.from_inclusive
               )
@@ -271,7 +267,7 @@ EOF
         ]
       ])) > 0
     ])
-    error_message = "For all ranges, either both the `from_inclusive` and `to_inclusive` values must be null, or both of them must be non-null with the `to_inclusive` value greater than or equal to the `from_inclusive` value."
+    error_message = "For all ranges, either one (or both) of the `from_inclusive` and `to_inclusive` values must be null, or the `to_inclusive` value must be greater than or equal to the `from_inclusive` value."
   }
 
   // Ensure that all items have the same discrete keys
