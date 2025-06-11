@@ -48,7 +48,7 @@ EOF
     condition = 0 == length(flatten([
       for group_key, group in var.rule_sets :
       [
-        for rule in values(group.rules) :
+        for rule in group.rules :
         null
         // If any CIDR blocks are non-null and aren't valid CIDRs, that's a problem
         if rule.cidr_ipv4 == null ? false : !can(cidrhost(rule.cidr_ipv4, 0))
@@ -62,7 +62,7 @@ EOF
         if rule.cidr_ipv4 == null ? false : !can(cidrhost(rule.cidr_ipv4, 0))
       ])}"
       if length([
-        for rule in values(group.rules) :
+        for rule in group.rules :
         null
         // If any CIDR blocks are non-null and aren't valid CIDRs, that's a problem
         if rule.cidr_ipv4 == null ? false : !can(cidrhost(rule.cidr_ipv4, 0))

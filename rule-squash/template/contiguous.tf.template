@@ -1,0 +1,249 @@
+locals {
+  neg_inf     = -9e500
+  pos_inf     = 9e500
+  digit_count = 30
+  // This is what we consider whole numbers for log2 calculations.
+  // We use this value because Terraform returns 15 decimal places.
+  log2_precision_allowance = 1e-14
+  max_number_of_ranges = ${max_number_of_ranges}
+
+  // STEPS:
+  //  1. Sort ascending by "from" value
+  //  2. For each rule, check if it's contiguous with the next one
+  //  3. Then loop through and count how many rules forward it remains contiguous
+  //  4. If it's a base2-aligned rule, do a pass to mark merges that would violate
+  //     base2 alignment as non-contiguous.
+  //  5. Then loop through and forward merge.
+
+%{for range_loop_idx in range(0, max_number_of_ranges, 1) ~}
+  // Add sort keys to each rule, which we use for sorting.
+  range_${range_loop_idx}_with_sort_keys = {
+    for group_key, group in %{ if range_loop_idx == 0 }local.reverse_pass_encapsulate%{ else }local.range_${range_loop_idx - 1}_squashed%{ endif } :
+    group_key => length(local.range_keys[group_key]) <= ${range_loop_idx} ? null : merge(group, {
+      rules = [
+        for rule_idx, rule in group.rules :
+        merge(rule, {
+          sort_key = contains(keys(rule.ranges), local.range_keys[group_key][${range_loop_idx}]) ? "$${format("%0$${local.digit_count}d", rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive == null ? local.neg_inf : rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive)}-$${format("%0$${local.digit_count}d", rule.ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive == null ? local.pos_inf : rule.ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive)}-$${rule_idx}" : "no-key-$${rule_idx}"
+        })
+      ]
+    })
+  }
+
+  // Extract just the sort keys from the rules, and sort them
+  range_${range_loop_idx}_sort_keys = {
+    for group_key, group in local.range_${range_loop_idx}_with_sort_keys :
+    group_key => length(local.range_keys[group_key]) <= ${range_loop_idx} ? null : sort([
+      for rule in group.rules :
+      rule.sort_key
+    ])
+  }
+
+  // Sort the rules themselves, based on the sort keys
+  range_${range_loop_idx}_sorted = {
+    for group_key, group in local.range_${range_loop_idx}_with_sort_keys :
+    group_key => length(local.range_keys[group_key]) <= ${range_loop_idx} ? null : merge(group, {
+      rules = [
+        for sort_key in local.range_${range_loop_idx}_sort_keys[group_key] :
+        [
+          for rule in group.rules :
+          rule
+          if rule.sort_key == sort_key
+        ][0]
+      ]
+    })
+  }
+
+  // Determine if a rule is contiguous with the next one
+  range_${range_loop_idx}_next_contiguous = {
+    for group_key, group in local.range_${range_loop_idx}_sorted :
+    group_key => length(local.range_keys[group_key]) <= ${range_loop_idx} ? null : merge(group, {
+      rules = [
+        for rule_idx, rule in group.rules :
+        merge(rule, {
+          // It's contiguous with the next rule if:
+          // - It's not the last rule
+          // - The next rule has a "from" that is overlaping with or adjacent to the "to" value of this rule
+          // - For every range other than the one being considered, the next rule's value is exactly equal
+          // - For every discrete key, the next rule's value is exactly equal
+          contiguous_with_next = (
+            // Check if it's the last rule.
+            // If this index is equal to the last index value, bail out with "false" because it's
+            // the last rule and therefore cannot be contiguous with the next rule.
+            rule_idx == length(group.rules) - 1 ? false : (
+              // Check if the range we're considering is actually contiguous
+              // It's contiguous with the next rule if:
+              // - Both rules have the key, AND
+              //    - This rule's "to" value is greater than or equal to one less than the next rule's "from" value (forward contiguity)
+
+              // This rule doesn't contain the range key we're checking? That means it can't be contiguous.
+              !contains(keys(rule.ranges), local.range_keys[group_key][${range_loop_idx}]) ? false : (
+                // The next rule doesn't contain the range key we're checking? That means it can't be contiguous.
+                !contains(keys(group.rules[rule_idx + 1].ranges), local.range_keys[group_key][${range_loop_idx}]) ? false : (
+                  // Check forward contiguity (next rule has higher values)
+                  // If this rule's value we're comparing has a null "to", that means we can't compare on the upper (forward) side.
+                  // This case should be filtered out in the encapsulation merging.
+                  rule.ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive == null ? false : (
+                    // If the next rule's value we're comparing has a null "from", that means we can't compare on the upper (forward) side.
+                    // This case should be filtered out in the encapsulation merging.
+                    group.rules[rule_idx + 1].ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive == null ? false : (
+                      // We have two real values to compare, so compare them.
+                      // They are forward contiguous if this rule's "to" value is at least adjacent (one less) to the next rule's "from" value
+                      rule.ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive < group.rules[rule_idx + 1].ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive - 1 ? false : (
+                        // We get here if the first few checks passed (not the last rule, has the key, next rule is forward or reverse contiguous),
+                        // so now we ensure no other ranges or discretes are violated.
+
+                        // Check every range other than the one being considered for contiguity
+                        // If any are more restrictive, then it is not contiguous
+                        0 < length(
+                          [
+                            for range_key in local.range_keys[group_key] :
+                            true
+                            if(
+                              // Only make this check if it's a range key other than the one we're considering for contiguity
+                              range_key != local.range_keys[group_key][${range_loop_idx}] ? (
+                                // This first check ensures that either neither of them have the key, or they both have the key
+                                (contains(keys(rule.ranges), range_key) != contains(keys(group.rules[rule_idx + 1].ranges), range_key)) ? true : (
+                                  // If this rule doesn't have the key, then due to the first check the next rule can't have the key, so this passes (false for violation)
+                                  !contains(keys(rule.ranges), range_key) ? false : (
+                                    // This check returns true (is a violation) if both rules have the key but the from value is different
+                                    rule.ranges[range_key].from_inclusive != group.rules[rule_idx + 1].ranges[range_key].from_inclusive ? true : (
+                                      // This check returns true (is a violation) if both rules have the key but the to value is different
+                                      rule.ranges[range_key].to_inclusive != group.rules[rule_idx + 1].ranges[range_key].to_inclusive
+                                    )
+                                  )
+                                )
+                              ) : false // false (not a violation) if it's the range key we're considering for contiguity
+                            )
+                          ],
+                        ) ? false :
+                        // Check every discrete. If any are more restrictive, then it's not contiguous.
+                        0 == length(
+                          [
+                            for discrete_key in local.discrete_keys[group_key] :
+                            true
+                            if(
+                              // It's a violation if:
+                              // - This rule has a key and the next rule doesn't OR
+                              // - The next rule has a key and htis rule doesn't
+                              // - This rule's value is different than the next rule's value
+
+                              // This first check ensures that either neither of them have the key, or they both have the key
+                              (contains(keys(rule.discretes), discrete_key) != contains(keys(group.rules[rule_idx + 1].discretes), discrete_key)) ? true : (
+                                // If this rule doesn't have the key, then due to the first check the next rule can't have the key, so this passes (false for violation)
+                                !contains(keys(rule.discretes), discrete_key) ? false : (
+                                  // This check returns true (is a violation) if both rules have the key but have different values
+                                  rule.discretes[discrete_key] != group.rules[rule_idx + 1].discretes[discrete_key]
+                                )
+                              )
+                            )
+                          ]
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+          }
+        )
+      ]
+    })
+  }
+
+  // This step adds a field that counts how many rules, moving forward,
+  // this rule is contiguous with.
+  range_${range_loop_idx}_contiguous_forward_count = {
+    for group_key, group in local.range_${range_loop_idx}_next_contiguous :
+    group_key => length(local.range_keys[group_key]) <= ${range_loop_idx} ? null : merge(group, {
+      rules = [
+        for rule_idx, rule in group.rules :
+        merge(rule, {
+          contiguous_forward_count = length([
+            for compare_rule_idx in range(rule_idx, length(group.rules) - 1) :
+            null
+            if group.rules[compare_rule_idx].contiguous_with_next
+          ])
+        })
+      ]
+    })
+  }
+
+  // This overwrites the contiguous forward count value for base2 range fields (e.g. IPv4 CIDR blocks),
+  // where we can't necessarily merge them even if they're contiguous since that might not
+  // align with the base2 boundary.
+  range_${range_loop_idx}_contiguous_base2 = {
+    for group_key, group in local.range_${range_loop_idx}_contiguous_forward_count :
+    // Don't bother doing anything if we're passed the last range key
+    group_key => length(local.range_keys[group_key]) <= ${range_loop_idx} ? null : (
+      // Don't bother doing anything if this range key isn't marked for base2 alignment
+      !contains(group.base2_align_range_keys, local.range_keys[group_key][${range_loop_idx}]) ? group : merge(group, {
+        rules = [
+          for rule_idx, rule in group.rules :
+          merge(rule, {
+            contiguous_forward_count = concat([
+              for forward_count in range(rule.contiguous_forward_count, 0, -1) :
+              forward_count
+              // To see if they can be merged,
+              // 1. Check if the combined range has a size that is a power of 2.
+              //    We do this by checking if the rounded value is equal to the raw value.
+              if floor(log(group.rules[rule_idx + forward_count].ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive - rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive + 1, 2) + 0.5) == log(group.rules[rule_idx + forward_count].ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive - rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive + 1, 2) ? (
+                // 2. Check if the starting value aligns with that power of 2.
+                rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive % (group.rules[rule_idx + forward_count].ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive - rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive + 1) == 0
+              ) : false
+            ], [0])[0]
+          })
+        ]
+      })
+    )
+  }
+
+  // Now squash rules that are contiguous.
+  range_${range_loop_idx}_squashed = {
+    for group_key, group in local.range_${range_loop_idx}_contiguous_base2 :
+    group_key => length(local.range_keys[group_key]) <= ${range_loop_idx} ? null : merge(group, {
+      rules = [
+        for rule_idx, rule in group.rules :
+        {
+          discretes = rule.discretes
+          ranges = {
+            for range_key, range_value in rule.ranges :
+            // If it's the range key we're comparing, update it to
+            // use the "to" value of the last contiguous rule in this sequence.
+            range_key => range_key == local.range_keys[group_key][${range_loop_idx}] ? merge(range_value, {
+              to_inclusive = group.rules[rule_idx + rule.contiguous_forward_count].ranges[range_key].to_inclusive
+            }) : range_value
+          }
+          // Merge the metadata from all of the rules that we just squashed
+          metadata = flatten(
+            [
+              for squashed_idx in range(rule_idx, rule_idx + rule.contiguous_forward_count + 1) :
+              group.rules[squashed_idx].metadata
+            ]
+          )
+        }
+        // Only include the rule if it's the first rule OR 
+        // the previous rule was not contiguous with this one.
+        // This removes rules that got squashed into a previous one.
+        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+      ]
+    })
+  }
+
+%{ endfor ~}
+  // A list of the squashed rules at each level
+  squashed_sets = [
+%{for range_loop_idx in range(0, max_number_of_ranges, 1) ~}
+    local.range_${range_loop_idx}_squashed,
+%{ endfor ~}
+  ]
+
+  // The final squashed set of rule sets. For each group, find how many range
+  // keys there were, then get the final result from that iteration of squashing.
+  // We do it this way so we don't waste memory by holding 100+ iterations of squashing
+  // in memory with most of them just being a replicate of the previous level.
+  final_squashed = {
+    for group_key in keys(local.reverse_pass_encapsulate) :
+    group_key => local.squashed_sets[length(local.range_keys[group_key]) - 1][group_key]
+  }
+}

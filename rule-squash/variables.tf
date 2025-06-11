@@ -19,6 +19,8 @@ discrete_equivalents = {
     }
 }
 
+- `base2_align_range_keys`: a list of range keys, where those ranges can only be merged along base2 boundaries (e.g. IPv4 CIDR blocks). For ranges that have range keys in this list, this will prevent contiguous rules from being merged if the resulting range doesn't have a size that is a power of 2 OR if the `from` value of the first rule doesn't align with that power of 2.
+
 - `rules`: a list of the actual rules to be reduced. Each rule has:
     - `discretes`: a map of discrete values for the rule, where the key is the descrete type (e.g. "protocol") and the value is the descrete value (e.g. "tcp").
     - `ranges`: a map of range objects, where the key is the range type (e.g. "ports") and the value is an object with a `from_inclusive` and `to_inclusive`. `null` values for `from_inclusive` or `to_inclusive` represent negative and positive infinity, respectively.
@@ -30,6 +32,7 @@ EOF
       {
         discrete_encapsulation = optional(map(map(list(any))), {})
         discrete_equivalents   = optional(map(map(list(any))), {})
+        base2_align_range_keys = optional(list(string), [])
         rules = optional(list(object({
           discretes = optional(map(any), {})
           ranges = optional(map(object({
@@ -45,6 +48,9 @@ EOF
   // TODO:
   // - Check for loops in the discrete encapsulation?
   // - Useful output for each validation
+  // - ensure there are no base2_align rules that don't appear in the ranges
+  // - verify that all starting and ending ranges that are base2 are aligned
+  // - ensure there are no more ranges than are supported
 
 
   // Ensure that no discrete equivalent type keys are in the associated values for the same discrete type

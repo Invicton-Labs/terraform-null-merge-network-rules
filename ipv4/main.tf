@@ -1,12 +1,16 @@
 locals {
   // Use a UUID for the range key that represents the CIDR block,
   // so we don't accidentally overwrite a range key the user provided
-  cidr_range_key = uuid()
+  cidr_range_key = "f72898f3-1f01-4d7d-96d9-6e151249bc84"
 
   // Conver the CIDRs to IP ranges in decimal format
   with_cidr_ranges = {
     for group_key, group in var.rule_sets :
     group_key => merge(group, {
+      // Flag that the CIDR range key should be base2 aligned
+      base2_align_range_keys = [
+        local.cidr_range_key,
+      ]
       rules = [
         for rule in group.rules :
         // If there's no CIDR block, just use the base rule
@@ -45,12 +49,16 @@ locals {
       rules = flatten([
         for rule in group.rules :
         // If this squashed rule doesn't have the CIDR range key, just use the squashed rule as-is
-        lookup(rule.ranges[local.local.cidr_range_key], null) == null ? rule : (
-          // Otherwise, we have to split the result into the minimum number of valid CIDRs
-          [
-            // TODO
-          ]
-        )
+        merge(concat([rule], lookup(rule.ranges, local.cidr_range_key, null) == null ? [] : [{
+          ranges = {
+            for range_key, range_value in rule.ranges :
+            range_key => range_value
+            // Strip out the range key that was used as the placeholder for IPv4
+            if range_key != local.cidr_range_key
+          }
+          // Convert the starting IP back to a specific IP, then add the prefix based on the size of the ranges
+          cidr_ipv4 = "${cidrhost("0.0.0.0/0", rule.ranges[local.cidr_range_key].from_inclusive)}/${32 - log(rule.ranges[local.cidr_range_key].to_inclusive - rule.ranges[local.cidr_range_key].from_inclusive + 1, 2)}"
+        }])...)
       ])
     })
   }
