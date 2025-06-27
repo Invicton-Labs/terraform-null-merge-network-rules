@@ -3,10 +3,51 @@
 // This notably speeds up the process for huge rule sets.
 
 locals {
+  discrete_encapsulation_primaries = {
+    for group_key, group in var.rule_sets :
+    group_key => {
+      for discrete_key, discrete_encapsulation in group.discrete_encapsulation:
+      discrete_key => [
+        for pair in discrete_encapsulation:
+        pair.primary
+      ]
+    }
+  }
+  discrete_encapsulation_encapsulated_values = {
+    for group_key, group in var.rule_sets :
+    group_key => {
+      for discrete_key, discrete_encapsulation in group.discrete_encapsulation:
+      discrete_key => [
+        for pair in discrete_encapsulation:
+        pair.encapsulated
+      ]
+    }
+  }
+  # discrete_equivalents_keys = {
+  #   for group_key, group in var.rule_sets :
+  #   key => {
+  #     for discrete_key, discrete_equivalents in group.discrete_equivalents:
+  #     discrete_key => [
+  #       for pair in discrete_equivalents:
+  #       pair.primary
+  #     ]
+  #   }
+  # }
+  # discrete_equivalents_values = {
+  #   for group_key, group in var.rule_sets :
+  #   key => {
+  #     for discrete_key, discrete_equivalents in group.discrete_equivalents:
+  #     discrete_key => [
+  #       for pair in discrete_equivalents:
+  #       pair.alternatives
+  #     ]
+  #   }
+  # }
+
   // Do a first pass to clean up equivalencies and ranges that are meaningless
   equivalencies = {
-    for key, group in var.rule_sets :
-    key => merge(group, {
+    for group_key, group in var.rule_sets :
+    group_key => merge(group, {
       rules = {
         for rule_idx, rule in group.rules :
         rule_idx => merge(rule, {
@@ -18,9 +59,9 @@ locals {
             // This will ensure that if there's an equivalency, it gets used, but
             // if not then the current value is used.
             dk => concat([
-              for dek, dev in group.discrete_equivalents[dk] :
-              dek
-              if contains(dev, dv)
+              for de_pair in group.discrete_equivalents[dk] :
+              de_pair.primary
+              if contains(de_pair.alternatives, dv)
             ], [dv])[0]
           }
           // Remove any ranges where both values are null, as that makes it an
@@ -38,8 +79,8 @@ locals {
 
   // This adds to each rule a listing of all of the rules it encapuslates (rules that can be merged into it)
   with_encapsulations = {
-    for key, group in local.equivalencies :
-    key => merge(group, {
+    for group_key, group in local.equivalencies :
+    group_key => merge(group, {
       rules = {
         for encapsulator_idx, encapsulator in group.rules :
         encapsulator_idx => merge(encapsulator, {
@@ -49,7 +90,7 @@ locals {
             encapsulated_idx => encapsulated
             // Exclude comparision of a rule to itself
             if encapsulated_idx == encapsulator_idx ? false : (
-              // Check if there are any ranges in the encapsulator that do not encapsulate the encapsulator (violations)
+              // Check if there are any ranges in the encapsulator that do not encapsulate the encapsulated (violations)
               length(
                 [
                   // Loop through all ranges in the rule that would be the encapsulator
@@ -73,36 +114,33 @@ locals {
                       encapsulator_range_value.to_inclusive == null ? false : encapsulated.ranges[range_key].to_inclusive == null ? true : encapsulator_range_value.to_inclusive < encapsulated.ranges[range_key].to_inclusive
                     )
                   )
-                ]) > 0 ? false : (
-                // Check if there are any ranges in the encapsulated rule that aren't in the has a range key that doesn't exist in the encapsulator.
-                // If there are any of these, the encapsulator cannot encapsulate the encapsulated.
+                ]
+              ) > 0 ? false : (
+                // Check if there are any discrete rules that are violated
                 length(
                   [
-                    for range_key in keys(encapsulated.ranges) :
+                    for discrete_key, encapsulator_discrete_value in encapsulator.discretes :
                     true
-                    if lookup(encapsulator.ranges, range_key, null) == null
+                    // If the value is equal, it matches so that's fine
+                    // If it's not equal, we have to check if this rule's value encapsulates the encapsulated rule's discrete value
+                    if (
+                      // If the encapsulated value doesn't have the key, it can't be encapsulated, that's a violation
+                      !contains(keys(encapsulated.discretes), discrete_key) ? true : (
+                        // It does have the key
+                        // If the key is equal, that's fine, no violation
+                        encapsulator_discrete_value == encapsulated.discretes[discrete_key] ? false : (
+                          // Otherwise, check if the value of the encapsulator encapsulates the value of the encapsulated
+                          // If the encapsulator's value is null, that means it encapsulates everything, so that's fine
+                          
+                          // See if the the encapsulator's discrete values covers all (null) other rvalues
+                          try(local.discrete_encapsulation_encapsulated_values[index(local.discrete_encapsulation_primaries[group_key][discrete_key], encapsulator.discretes[discrete_key])], []) == null ? false : (
+                            !contains(try(local.discrete_encapsulation_encapsulated_values[index(local.discrete_encapsulation_primaries[group_key][discrete_key], encapsulator.discretes[discrete_key])], []), encapsulated.discretes[discrete_key])
+                          )
+                        )
+                      )
+                    )
                   ]
-                  ) > 0 ? false : (
-                  // Check if there are any discrete rules that are violated
-                  length(
-                    [
-                      for discrete_key, encapsulator_discrete_value in encapsulator.discretes :
-                      true
-                      // If the value is equal, it matches so that's fine
-                      // If it's not equal, we have to check if this rule's value encapsulates the encapsulated rule's discrete value
-                      if encapsulator_discrete_value == encapsulated.discretes[discrete_key] ? false : !contains(lookup(group.discrete_encapsulation[discrete_key], encapsulator.discretes[discrete_key], []), encapsulated.discretes[discrete_key])
-                    ]) > 0 ? false : (
-                    // Check if the encapsulated rule has any discrete keys that don't exist in the encapsulator.
-                    // If there are any of these, the encapsulator cannot encapsulate the encapsulated.
-                    length(
-                      [
-                        for discrete_key in keys(encapsulated.discretes) :
-                        true
-                        if lookup(encapsulator.discretes, discrete_key, null) == null
-                      ]
-                    ) == 0
-                  )
-                )
+                ) > 0 ? false : true
               )
             )
           }
@@ -155,6 +193,7 @@ locals {
             ])
           }) :
           field_key => field_value
+          // Strip out this field we no longer need
           if field_key != "encapsulates"
         }
         // Only include the rule if it's not encapsulated by a previous rule

@@ -1,148 +1,148 @@
 locals {
   // https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
-  iana_protocol_equivalencies = {
-    0   = ["HOPOPT"]
-    1   = ["ICMP"]
-    2   = ["IGMP"]
-    3   = ["GGP"]
-    4   = ["IPv4"]
-    5   = ["ST"]
-    6   = ["TCP"]
-    7   = ["CBT"]
-    8   = ["EGP"]
-    9   = ["IGP"]
-    10  = ["BBN-RCC-MON"]
-    11  = ["NVP-II"]
-    12  = ["PUP"]
-    13  = ["ARGUS (deprecated)"]
-    14  = ["EMCON"]
-    15  = ["XNET"]
-    16  = ["CHAOS"]
-    17  = ["UDP"]
-    18  = ["MUX"]
-    19  = ["DCN-MEAS"]
-    20  = ["HMP"]
-    21  = ["PRM"]
-    22  = ["XNS-IDP"]
-    23  = ["TRUNK-1"]
-    24  = ["TRUNK-2"]
-    25  = ["LEAF-1"]
-    26  = ["LEAF-2"]
-    27  = ["RDP"]
-    28  = ["IRTP"]
-    29  = ["ISO-TP4"]
-    30  = ["NETBLT"]
-    31  = ["MFE-NSP"]
-    32  = ["MERIT-INP"]
-    33  = ["DCCP"]
-    34  = ["3PC"]
-    35  = ["IDPR"]
-    36  = ["XTP"]
-    37  = ["DDP"]
-    38  = ["IDPR-CMTP"]
-    39  = ["TP++"]
-    40  = ["IL"]
-    41  = ["IPv6"]
-    42  = ["SDRP"]
-    43  = ["IPv6-Route"]
-    44  = ["IPv6-Frag"]
-    45  = ["IDRP"]
-    46  = ["RSVP"]
-    47  = ["GRE"]
-    48  = ["DSR"]
-    49  = ["BNA"]
-    50  = ["ESP"]
-    51  = ["AH"]
-    52  = ["I-NLSP"]
-    53  = ["SWIPE (deprecated)"]
-    54  = ["NARP"]
-    55  = ["Min-IPv4"]
-    56  = ["TLSP"]
-    57  = ["SKIP"]
-    58  = ["IPv6-ICMP"]
-    59  = ["IPv6-NoNxt"]
-    60  = ["IPv6-Opts"]
-    62  = ["CFTP"]
-    64  = ["SAT-EXPAK"]
-    65  = ["KRYPTOLAN"]
-    66  = ["RVD"]
-    67  = ["IPPC"]
-    69  = ["SAT-MON"]
-    70  = ["VISA"]
-    71  = ["IPCV"]
-    72  = ["CPNX"]
-    73  = ["CPHB"]
-    74  = ["WSN"]
-    75  = ["PVP"]
-    76  = ["BR-SAT-MON"]
-    77  = ["SUN-ND"]
-    78  = ["WB-MON"]
-    79  = ["WB-EXPAK"]
-    80  = ["ISO-IP"]
-    81  = ["VMTP"]
-    82  = ["SECURE-VMTP"]
-    83  = ["VINES"]
-    84  = ["IPTM"]
-    85  = ["NSFNET-IGP"]
-    86  = ["DGP"]
-    87  = ["TCF"]
-    88  = ["EIGRP"]
-    89  = ["OSPFIGP"]
-    90  = ["Sprite-RPC"]
-    91  = ["LARP"]
-    92  = ["MTP"]
-    93  = ["AX.25"]
-    94  = ["IPIP"]
-    95  = ["MICP (deprecated)"]
-    96  = ["SCC-SP"]
-    97  = ["ETHERIP"]
-    98  = ["ENCAP"]
-    100 = ["GMTP"]
-    101 = ["IFMP"]
-    102 = ["PNNI"]
-    103 = ["PIM"]
-    104 = ["ARIS"]
-    105 = ["SCPS"]
-    106 = ["QNX"]
-    107 = ["A/N"]
-    108 = ["IPComp"]
-    109 = ["SNP"]
-    110 = ["Compaq-Peer"]
-    111 = ["IPX-in-IP"]
-    112 = ["VRRP"]
-    113 = ["PGM"]
-    115 = ["L2TP"]
-    116 = ["DDX"]
-    117 = ["IATP"]
-    118 = ["STP"]
-    119 = ["SRP"]
-    120 = ["UTI"]
-    121 = ["SMP"]
-    122 = ["SM (deprecated)"]
-    123 = ["PTP"]
-    124 = ["ISIS over IPv4"]
-    125 = ["FIRE"]
-    126 = ["CRTP"]
-    127 = ["CRUDP"]
-    128 = ["SSCOPMCE"]
-    129 = ["IPLT"]
-    130 = ["SPS"]
-    131 = ["PIPE"]
-    132 = ["SCTP"]
-    133 = ["FC"]
-    134 = ["RSVP-E2E-IGNORE"]
-    135 = ["Mobility Header"]
-    136 = ["UDPLite"]
-    137 = ["MPLS-in-IP"]
-    138 = ["manet"]
-    139 = ["HIP"]
-    140 = ["Shim6"]
-    141 = ["WESP"]
-    142 = ["ROHC"]
-    143 = ["Ethernet"]
-    144 = ["AGGFRAG"]
-    145 = ["NSH"]
-    146 = ["Homa"]
-    147 = ["BIT-EMU"]
-  }
+  iana_protocol_equivalencies = [
+    { primary = 0, alternatives = ["HOPOPT"] },
+    { primary = 1, alternatives = ["ICMP"] },
+    { primary = 2, alternatives = ["IGMP"] },
+    { primary = 3, alternatives = ["GGP"] },
+    { primary = 4, alternatives = ["IPv4"] },
+    { primary = 5, alternatives = ["ST"] },
+    { primary = 6, alternatives = ["TCP"] },
+    { primary = 7, alternatives = ["CBT"] },
+    { primary = 8, alternatives = ["EGP"] },
+    { primary = 9, alternatives = ["IGP"] },
+    { primary = 10, alternatives = ["BBN-RCC-MON"] },
+    { primary = 11, alternatives = ["NVP-II"] },
+    { primary = 12, alternatives = ["PUP"] },
+    { primary = 13, alternatives = ["ARGUS"] },
+    { primary = 14, alternatives = ["EMCON"] },
+    { primary = 15, alternatives = ["XNET"] },
+    { primary = 16, alternatives = ["CHAOS"] },
+    { primary = 17, alternatives = ["UDP"] },
+    { primary = 18, alternatives = ["MUX"] },
+    { primary = 19, alternatives = ["DCN-MEAS"] },
+    { primary = 20, alternatives = ["HMP"] },
+    { primary = 21, alternatives = ["PRM"] },
+    { primary = 22, alternatives = ["XNS-IDP"] },
+    { primary = 23, alternatives = ["TRUNK-1"] },
+    { primary = 24, alternatives = ["TRUNK-2"] },
+    { primary = 25, alternatives = ["LEAF-1"] },
+    { primary = 26, alternatives = ["LEAF-2"] },
+    { primary = 27, alternatives = ["RDP"] },
+    { primary = 28, alternatives = ["IRTP"] },
+    { primary = 29, alternatives = ["ISO-TP4"] },
+    { primary = 30, alternatives = ["NETBLT"] },
+    { primary = 31, alternatives = ["MFE-NSP"] },
+    { primary = 32, alternatives = ["MERIT-INP"] },
+    { primary = 33, alternatives = ["DCCP"] },
+    { primary = 34, alternatives = ["3PC"] },
+    { primary = 35, alternatives = ["IDPR"] },
+    { primary = 36, alternatives = ["XTP"] },
+    { primary = 37, alternatives = ["DDP"] },
+    { primary = 38, alternatives = ["IDPR-CMTP"] },
+    { primary = 39, alternatives = ["TP++"] },
+    { primary = 40, alternatives = ["IL"] },
+    { primary = 41, alternatives = ["IPv6"] },
+    { primary = 42, alternatives = ["SDRP"] },
+    { primary = 43, alternatives = ["IPv6-Route"] },
+    { primary = 44, alternatives = ["IPv6-Frag"] },
+    { primary = 45, alternatives = ["IDRP"] },
+    { primary = 46, alternatives = ["RSVP"] },
+    { primary = 47, alternatives = ["GRE"] },
+    { primary = 48, alternatives = ["DSR"] },
+    { primary = 49, alternatives = ["BNA"] },
+    { primary = 50, alternatives = ["ESP"] },
+    { primary = 51, alternatives = ["AH"] },
+    { primary = 52, alternatives = ["I-NLSP"] },
+    { primary = 53, alternatives = ["SWIPE"] },
+    { primary = 54, alternatives = ["NARP"] },
+    { primary = 55, alternatives = ["Min-IPv4"] },
+    { primary = 56, alternatives = ["TLSP"] },
+    { primary = 57, alternatives = ["SKIP"] },
+    { primary = 58, alternatives = ["IPv6-ICMP"] },
+    { primary = 59, alternatives = ["IPv6-NoNxt"] },
+    { primary = 60, alternatives = ["IPv6-Opts"] },
+    { primary = 62, alternatives = ["CFTP"] },
+    { primary = 64, alternatives = ["SAT-EXPAK"] },
+    { primary = 65, alternatives = ["KRYPTOLAN"] },
+    { primary = 66, alternatives = ["RVD"] },
+    { primary = 67, alternatives = ["IPPC"] },
+    { primary = 69, alternatives = ["SAT-MON"] },
+    { primary = 70, alternatives = ["VISA"] },
+    { primary = 71, alternatives = ["IPCV"] },
+    { primary = 72, alternatives = ["CPNX"] },
+    { primary = 73, alternatives = ["CPHB"] },
+    { primary = 74, alternatives = ["WSN"] },
+    { primary = 75, alternatives = ["PVP"] },
+    { primary = 76, alternatives = ["BR-SAT-MON"] },
+    { primary = 77, alternatives = ["SUN-ND"] },
+    { primary = 78, alternatives = ["WB-MON"] },
+    { primary = 79, alternatives = ["WB-EXPAK"] },
+    { primary = 80, alternatives = ["ISO-IP"] },
+    { primary = 81, alternatives = ["VMTP"] },
+    { primary = 82, alternatives = ["SECURE-VMTP"] },
+    { primary = 83, alternatives = ["VINES"] },
+    { primary = 84, alternatives = ["IPTM"] },
+    { primary = 85, alternatives = ["NSFNET-IGP"] },
+    { primary = 86, alternatives = ["DGP"] },
+    { primary = 87, alternatives = ["TCF"] },
+    { primary = 88, alternatives = ["EIGRP"] },
+    { primary = 89, alternatives = ["OSPFIGP"] },
+    { primary = 90, alternatives = ["Sprite-RPC"] },
+    { primary = 91, alternatives = ["LARP"] },
+    { primary = 92, alternatives = ["MTP"] },
+    { primary = 93, alternatives = ["AX.25"] },
+    { primary = 94, alternatives = ["IPIP"] },
+    { primary = 95, alternatives = ["MICP"] },
+    { primary = 96, alternatives = ["SCC-SP"] },
+    { primary = 97, alternatives = ["ETHERIP"] },
+    { primary = 98, alternatives = ["ENCAP"] },
+    { primary = 100, alternatives = ["GMTP"] },
+    { primary = 101, alternatives = ["IFMP"] },
+    { primary = 102, alternatives = ["PNNI"] },
+    { primary = 103, alternatives = ["PIM"] },
+    { primary = 104, alternatives = ["ARIS"] },
+    { primary = 105, alternatives = ["SCPS"] },
+    { primary = 106, alternatives = ["QNX"] },
+    { primary = 107, alternatives = ["A/N"] },
+    { primary = 108, alternatives = ["IPComp"] },
+    { primary = 109, alternatives = ["SNP"] },
+    { primary = 110, alternatives = ["Compaq-Peer"] },
+    { primary = 111, alternatives = ["IPX-in-IP"] },
+    { primary = 112, alternatives = ["VRRP"] },
+    { primary = 113, alternatives = ["PGM"] },
+    { primary = 115, alternatives = ["L2TP"] },
+    { primary = 116, alternatives = ["DDX"] },
+    { primary = 117, alternatives = ["IATP"] },
+    { primary = 118, alternatives = ["STP"] },
+    { primary = 119, alternatives = ["SRP"] },
+    { primary = 120, alternatives = ["UTI"] },
+    { primary = 121, alternatives = ["SMP"] },
+    { primary = 122, alternatives = ["SM"] },
+    { primary = 123, alternatives = ["PTP"] },
+    { primary = 124, alternatives = ["ISIS over IPv4"] },
+    { primary = 125, alternatives = ["FIRE"] },
+    { primary = 126, alternatives = ["CRTP"] },
+    { primary = 127, alternatives = ["CRUDP"] },
+    { primary = 128, alternatives = ["SSCOPMCE"] },
+    { primary = 129, alternatives = ["IPLT"] },
+    { primary = 130, alternatives = ["SPS"] },
+    { primary = 131, alternatives = ["PIPE"] },
+    { primary = 132, alternatives = ["SCTP"] },
+    { primary = 133, alternatives = ["FC"] },
+    { primary = 134, alternatives = ["RSVP-E2E-IGNORE"] },
+    { primary = 135, alternatives = ["Mobility Header"] },
+    { primary = 136, alternatives = ["UDPLite"] },
+    { primary = 137, alternatives = ["MPLS-in-IP"] },
+    { primary = 138, alternatives = ["manet"] },
+    { primary = 139, alternatives = ["HIP"] },
+    { primary = 140, alternatives = ["Shim6"] },
+    { primary = 141, alternatives = ["WESP"] },
+    { primary = 142, alternatives = ["ROHC"] },
+    { primary = 143, alternatives = ["Ethernet"] },
+    { primary = 144, alternatives = ["AGGFRAG"] },
+    { primary = 145, alternatives = ["NSH"] },
+    { primary = 146, alternatives = ["Homa"] },
+    { primary = 147, alternatives = ["BIT-EMU"] },
+  ]
 }

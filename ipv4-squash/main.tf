@@ -11,6 +11,12 @@ locals {
       base2_align_range_keys = [
         local.cidr_range_key,
       ]
+      discrete_encapsulation = merge(group.discrete_encapsulation, {
+        (local.cidr_range_key) = []
+      })
+      discrete_equivalents = merge(group.discrete_equivalents, {
+        (local.cidr_range_key) = []
+      })
       rules = [
         for rule in group.rules :
         // If there's no CIDR block, just use the base rule

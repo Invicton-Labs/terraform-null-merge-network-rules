@@ -3,23 +3,29 @@ variable "rule_sets" {
 A map of rule lists. Each rule list is handled independently; the map-based input is simply to allow multiple rule lists to be reduced in a single module.
 
 Each rule list has:
-- `discrete_encapsulation`: a map (key = discrete key) of maps (key = discrete value) of lists of discrete values that encapsulate other descrete values. This indicates a one-way encapsulation (the key encapsulates all values), but does not imply the reverse is true. For example, if the discrete key is for "protocol", the value "all" might encapsulate ["udp", "tcp", "icmp"]. This would be represented as:
+- `discrete_encapsulation`: a map (key = discrete key) of lists of objects (`primary` = encapsulating value, `encapsulated` = list of encapsulated vlaues). If `null` is provided instead of a list, this indicates that all values are encapsulated. This indicates a one-way encapsulation (the key encapsulates all values), but does not imply the reverse is true. For example, if the discrete key is for "protocol", the value "all" might encapsulate ["udp", "tcp", "icmp"]. This would be represented as:
 
 discrete_encapsulation = {
-    protocol = {
-        all = ["udp", "tcp", "icmp"]
-    }
+    protocol = [
+        {
+            primary = "all"
+            encapsulated = ["udp", "tcp", "icmp"]
+        }
+    ]
 }
 
-- `discrete_equivalents`: a map (key = discrete key) of maps (key = discrete value) of lists where the key is equivalent to all values. This indicates a bi-directional equivalency. In reduced rules, all discrete values found in the map values will be replaced with the key for that map. For example, in AWS network rules, protocol "6" is equivalent to "tcp". This would be represented as:
+- `discrete_equivalents`: a map (key = discrete key) of lists of objects (`primary` = preferred value, `alternatives` = list of equivalent values). This indicates a bi-directional equivalency. In reduced rules, all discrete values found in the alternative values will be replaced with the primary value for that key. For example, in AWS network rules, protocol 6 is equivalent to "tcp". This would be represented as:
 
 discrete_equivalents = {
-    protocol = {
-        6 = ["tcp"]
-    }
+    protocol = [
+        {
+            primary = 6
+            alternatives = ["tcp"]
+        }
+    ]
 }
 
-- `base2_align_range_keys`: a list of range keys, where those ranges can only be merged along base2 boundaries (e.g. IPv4 CIDR blocks). For ranges that have range keys in this list, this will prevent contiguous rules from being merged if the resulting range doesn't have a size that is a power of 2 OR if the `from` value of the first rule doesn't align with that power of 2.
+- `base2_align_range_keys`: a list of range keys, where those ranges can only be merged along base2 boundaries (e.g. IPv4 CIDR blocks). For ranges that have range keys in this list, this will prevent contiguous rules from being merged if the resulting range doesn't have a size that is a power of 2 OR if the `from` value of the merged range doesn't align with that power of 2.
 
 - `rules`: a list of the actual rules to be reduced. Each rule has:
     - `discretes`: a map of discrete values for the rule, where the key is the descrete type (e.g. "protocol") and the value is the descrete value (e.g. "tcp").
@@ -30,11 +36,17 @@ EOF
   type = map(
     object(
       {
-        discrete_encapsulation = optional(map(map(list(any))), {})
-        discrete_equivalents   = optional(map(map(list(any))), {})
+        discrete_encapsulation = optional(map(list(object({
+          primary = any
+          encapsulated = list(any)
+        }))), {})
+        discrete_equivalents   = optional(map(list(object({
+          primary = any
+          alternatives = list(any)
+        }))), {})
         base2_align_range_keys = optional(list(string), [])
         rules = optional(list(object({
-          discretes = optional(map(any), {})
+          discretes = optional(any, {})
           ranges = optional(map(object({
             from_inclusive = number
             to_inclusive   = number
@@ -46,6 +58,8 @@ EOF
   )
 
   // TODO:
+  // - discretes object must be a map
+  // - discretes can only be bools, strings, numbers, or null
   // - Check for loops in the discrete encapsulation?
   // - Useful output for each validation
   // - ensure there are no base2_align rules that don't appear in the ranges
@@ -56,60 +70,52 @@ EOF
   // Ensure that no discrete equivalent type keys are in the associated values for the same discrete type
   validation {
     condition = 0 == length(flatten([
-      for key, group in var.rule_sets :
+      for group_key, group in var.rule_sets :
       [
         for dev in values(group.discrete_equivalents) :
         null
         // If any of the keys are found in any of the values, that's a problem
-        if length(setintersection(keys(dev), flatten([values(dev)]))) > 0
+        if length(setintersection([for pair in dev: pair.primary], flatten([for pair in dev: pair.alternatives]))) > 0
       ]
     ]))
-    error_message = "For each set, none of the keys in any `discrete_equivalents` map may be present in the values for that same map. The input does not meet this requirement: ${join(", ", [
-      for key, group in var.rule_sets :
-      "${key} - ${join(", ", [
+    error_message = "For each set, none of the `primary` values for any `discrete_equivalents` key may be present in the `alternatives` values for that same key. The input does not meet this requirement:\n${join(", ", flatten([
+      for group_key, group in var.rule_sets :
+      [
         for dek, dev in group.discrete_equivalents :
-        "${dek} (${join(", ", distinct(setintersection(keys(dev), flatten([values(dev)]))))})"
-        if length(setintersection(keys(dev), flatten([values(dev)]))) > 0
-      ])}"
-      if length(flatten([
-        for dev in values(group.discrete_equivalents) :
-        null
-        if length(setintersection(keys(dev), flatten([values(dev)]))) > 0
-      ])) > 0
-    ])}"
+        "\t- Set \"${group_key}\", discrete key \"${dek}\" (values: ${join(", ", distinct(setintersection([for pair in dev: pair.primary], flatten([for pair in dev: pair.alternatives]))))})"
+        if length(setintersection([for pair in dev: pair.primary], flatten([for pair in dev: pair.alternatives]))) > 0
+      ]
+    ]))}"
   }
 
   // Ensure that there are no discrete equivalent duplicates
   validation {
     condition = 0 == length(flatten([
-      for key, group in var.rule_sets :
+      for group_key, group in var.rule_sets :
       [
         for dev in values(group.discrete_equivalents) :
         null
         // It's invalid if the length of the distinct set is different than the length of the complete set,
         // since that means that the complete set has duplicates.
-        if length(distinct(flatten([values(dev)]))) != length(flatten([values(dev)]))
+        if length(distinct(flatten([for pair in dev: pair.alternatives]))) != length(flatten([for pair in dev: pair.alternatives]))
       ]
     ]))
-    error_message = "For each set, the values in the `discrete_equivalents` map must not have any duplicates. The input does not meet this requirement: ${join(", ", [
-      for key, group in var.rule_sets :
-      "${key} - ${join(", ", [
+    error_message = "For each set, each `alternatives` value for each `discrete_equivalents` key must only appear in one `alternatives` value, and must not have any duplicates. The input does not meet this requirement:\n${join(", ", flatten([
+      for group_key, group in var.rule_sets :
+      [
         for dek, dev in group.discrete_equivalents :
-        "${dek} (${join(", ", distinct([
-          for v in flatten([values(dev)]) :
+        "\t- Set \"${group_key}\", discrete key \"${dek}\" (values: ${join(", ", [
+        for v in flatten([for pair in dev: pair.alternatives]) :
           v
           // Count how many instances of this value there are. If there's more than 1, it's a duplicate.
-          if length([for v2 in flatten([values(dev)]) : v2 if v2 == v]) > 1
-        ]))})"
-        if length(distinct(flatten([values(dev)]))) != length(flatten([values(dev)]))
-      ])}"
-      if length(flatten([
-        for dev in values(group.discrete_equivalents) :
-        null
-        if length(distinct(flatten([values(dev)]))) != length(flatten([values(dev)]))
-      ])) > 0
-    ])}"
+          if length([for v2 in flatten([for pair in dev: pair.alternatives]) : v2 if v2 == v]) > 1
+        ])})"
+        if length(distinct(flatten([for pair in dev: pair.alternatives]))) != length(flatten([for pair in dev: pair.alternatives]))
+      ]
+    ]))}"
   }
+
+  // TODO: continue from here down, ensuring all validation rules have a consistent format
 
   // Ensure that the discrete encapsulation values are all valid
   validation {
@@ -123,12 +129,13 @@ EOF
         true
         if length([
           // Check each encapsulation
-          for discrete_equalities in discrete_encapsulations :
+          for discrete_encapsulation in discrete_encapsulations :
           true
-          if length([
-            for equality in discrete_equalities :
+          // If it's null, that's fine because it means it encapsulates everything
+          if discrete_encapsulation == null ? false : length([
+            for encapsulation in discrete_encapsulation :
             true
-            if can(keys(equality)) || can(anytrue(equality))
+            if can(keys(encapsulation)) || can(anytrue(encapsulation))
           ]) > 0
         ]) > 0
       ]) > 0

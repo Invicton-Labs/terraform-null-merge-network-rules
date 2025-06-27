@@ -12,91 +12,113 @@ variable "rule_sets" {
     metadata   = optional(map(any))
   })))
 
-  // TODO: validate that all protocols are strings or numbers and not null
-  // TODO: validate that the allow is not null
-  // TODO: validate that the CIDR block is valid and not null
-}
-
-locals {
-  // Discrete encapsulations and equivalencies are found here:
-  // https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkAclEntry.html
-  discrete_encapsulation = {
-    protocol = {
-      -1 = null
-    }
-    icmp_type = {
-      -1 = null
-    }
-    icmp_code = {
-      -1 = null
-    }
-  }
-
-  discrete_equivalents = {
-    protocol = merge({
-      -1 = null
-    }, local.iana_protocol_equivalencies)
-  }
-}
-
-module "squash_ipv4" {
-  source = "../ipv4"
-  rule_sets = {
-    set-1 = {
-      discrete_encapsulation = {
-
-      }
-      discrete_equivalents = {}
-      rules = [
-        {
-          cidr_ipv4 = "10.1.0.0/16"
-          ranges = {
-            ports = {
-              from_inclusive = 10
-              to_inclusive   = 100
-            }
-          }
-          metadata = {
-            id = 1
-          }
-        },
-        {
-          cidr_ipv4 = "10.2.0.0/16"
-          ranges = {
-            ports = {
-              from_inclusive = 10
-              to_inclusive   = 100
-            }
-          }
-          metadata = {
-            id = 2
-          }
-        },
-        {
-          cidr_ipv4 = "10.3.0.0/16"
-          ranges = {
-            ports = {
-              from_inclusive = 10
-              to_inclusive   = 100
-            }
-          }
-          metadata = {
-            id = 3
-          }
-        },
-        {
-          cidr_ipv4 = "10.4.0.0/15"
-          ranges = {
-            ports = {
-              from_inclusive = 20
-              to_inclusive   = 101
-            }
-          }
-          metadata = {
-            id = 4
-          }
-        },
+  // Verify that the protocol is either a string or a number
+  validation {
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets:
+      [
+        for rule in group:
+        null
+        if !contains(["string", "number"], rule.protocol == null ? "null" : can(length(rule.protocol)) ? (
+          // It's either a map, object, list, set, or string
+          can(keys(rule.protocol)) ? (
+            // It has keys, so it's either a map or object
+            can(tomap(rule.protocol)) ? "map" : "object"
+          ) : (
+            // It doen't have keys, so it's a list, set, or string
+            can(flatten(rule.protocol)) ? (
+              // It can be flattened, so it's a list or set
+              can(coalescelist(rule.protocol, [null])) ? "list" : "set"
+            ) : "string"
+          )
+        ) : (
+          // It's either a number or a bool
+          can(tobool(rule.protocol)) ? "bool" : "number"
+        ))
       ]
-    }
+    ]))
+    error_message = "For each rule, the `protocol` must be either a string or a number. The input does not meet this requirement:\n${join("\n", flatten([
+      for group_key, group in var.rule_sets:
+      [
+        for idx, rule in group:
+        "\t- Set \"${group_key}\", rule at index ${idx} (value: \"${rule.protocol == null || !can(tostring(rule.protocol)) ? jsonencode(rule.protocol) : rule.protocol}\")"
+        if !contains(["string", "number"], rule.protocol == null ? "null" : can(length(rule.protocol)) ? (
+            // It's either a map, object, list, set, or string
+            can(keys(rule.protocol)) ? (
+              // It has keys, so it's either a map or object
+              can(tomap(rule.protocol)) ? "map" : "object"
+            ) : (
+              // It doen't have keys, so it's a list, set, or string
+              can(flatten(rule.protocol)) ? (
+                // It can be flattened, so it's a list or set
+                can(coalescelist(rule.protocol, [null])) ? "list" : "set"
+              ) : "string"
+            )
+          ) : (
+            // It's either a number or a bool
+            can(tobool(rule.protocol)) ? "bool" : "number"
+          ))      
+      ]
+    ]))}"
   }
+
+  // Verify that the "allow" value is a valid boolean
+  validation {
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets:
+      [
+        for rule in group:
+        null
+        if rule.allow == null
+      ]
+    ]))
+    error_message = "For each rule, the `allow` value must be true or false (not null). The input does not meet this requirement:\n${join("\n", flatten([
+      for group_key, group in var.rule_sets:
+      [
+        for idx, rule in group:
+        "\t- Set \"${group_key}\", rule at index ${idx}"
+        if rule.allow == null
+      ]
+    ]))}"
+    }
+
+  // Verify that the "egress" value is a valid boolean
+  validation {
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets:
+      [
+        for rule in group:
+        null
+        if rule.egress == null
+      ]
+    ]))
+    error_message = "For each rule, the `egress` value must be true or false (not null). The input does not meet this requirement:\n${join("\n", flatten([
+      for group_key, group in var.rule_sets:
+      [
+        for idx, rule in group:
+        "\t- Set \"${group_key}\", rule at index ${idx}"
+        if rule.egress == null
+      ]
+    ]))}"
+    }
+
+  // Verify that the "cidr_block" value is valid
+  validation {
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets:
+      [
+        for rule in group:
+        null
+        if rule.cidr_block == null ? true : !can(cidrhost(rule.cidr_block, 0))
+      ]
+    ]))
+    error_message = "For each rule, the `cidr_block` value must be a valid CIDR block. The input does not meet this requirement:\n${join("\n", flatten([
+      for group_key, group in var.rule_sets:
+      [
+        for idx, rule in group:
+        "\t- Set \"${group_key}\", rule at index ${idx} (value: \"${rule.cidr_block == null ? "null" : rule.cidr_block}\")"
+        if rule.cidr_block == null ? true : !can(cidrhost(rule.cidr_block, 0))
+      ]
+    ]))}"
+    }
 }
