@@ -3,50 +3,81 @@
 // This notably speeds up the process for huge rule sets.
 
 locals {
-  discrete_encapsulation_primaries = {
+  // Get a list of all discrete and range keys found within each rule set.
+  // We use this to standardize the rules for merging.
+  all_discrete_and_range_keys = {
     for group_key, group in var.rule_sets :
     group_key => {
-      for discrete_key, discrete_encapsulation in group.discrete_encapsulation:
+      discrete = distinct(flatten(
+        [
+          for rule in group.rules :
+          keys(rule.discretes)
+        ]
+      ))
+      range = distinct(flatten(
+        [
+          for rule in group.rules :
+          keys(rule.ranges)
+        ]
+      ))
+    }
+  }
+
+  // This adds any missing discrete and range keys to any rule that doesn't have them,
+  // so that all rules have the same keys to ensure consistency in merging.
+  standardized_rule_sets = {
+    for group_key, group in var.rule_sets :
+    group_key => merge(group, {
+      rules = [
+        for rule_idx, rule in group.rules :
+        merge(rule, {
+          discretes = merge(rule.discretes, {
+            for k in setsubtract(local.all_discrete_and_range_keys[group_key].discrete, keys(rule.discretes)) :
+            k => null
+          })
+          ranges = merge(rule.ranges, {
+            for k in setsubtract(local.all_discrete_and_range_keys[group_key].range, keys(rule.ranges)) :
+            k => {
+              from_inclusive = null
+              to_inclusive   = null
+            }
+          })
+          metadata = {
+            original = rule.metadata
+            temp = {
+              original_rule_idx = rule_idx
+            }
+          }
+        })
+      ]
+      }
+    )
+  }
+
+  discrete_encapsulation_primaries = {
+    for group_key, group in local.standardized_rule_sets :
+    group_key => {
+      for discrete_key, discrete_encapsulation in group.discrete_encapsulation :
       discrete_key => [
-        for pair in discrete_encapsulation:
+        for pair in discrete_encapsulation :
         pair.primary
       ]
     }
   }
   discrete_encapsulation_encapsulated_values = {
-    for group_key, group in var.rule_sets :
+    for group_key, group in local.standardized_rule_sets :
     group_key => {
-      for discrete_key, discrete_encapsulation in group.discrete_encapsulation:
+      for discrete_key, discrete_encapsulation in group.discrete_encapsulation :
       discrete_key => [
-        for pair in discrete_encapsulation:
+        for pair in discrete_encapsulation :
         pair.encapsulated
       ]
     }
   }
-  # discrete_equivalents_keys = {
-  #   for group_key, group in var.rule_sets :
-  #   key => {
-  #     for discrete_key, discrete_equivalents in group.discrete_equivalents:
-  #     discrete_key => [
-  #       for pair in discrete_equivalents:
-  #       pair.primary
-  #     ]
-  #   }
-  # }
-  # discrete_equivalents_values = {
-  #   for group_key, group in var.rule_sets :
-  #   key => {
-  #     for discrete_key, discrete_equivalents in group.discrete_equivalents:
-  #     discrete_key => [
-  #       for pair in discrete_equivalents:
-  #       pair.alternatives
-  #     ]
-  #   }
-  # }
 
   // Do a first pass to clean up equivalencies and ranges that are meaningless
   equivalencies = {
-    for group_key, group in var.rule_sets :
+    for group_key, group in local.standardized_rule_sets :
     group_key => merge(group, {
       rules = {
         for rule_idx, rule in group.rules :
@@ -66,12 +97,13 @@ locals {
           }
           // Remove any ranges where both values are null, as that makes it an
           // infinite range and thereby not a range limit at all.
-          ranges = {
-            for rk, rv in rule.ranges :
-            rk => rv
-            // Only include the range if at least one of the bounds is non-null
-            if rv.to_inclusive != null ? true : rv.from_inclusive != null
-          }
+          // TODO: delete?
+          # ranges = {
+          #   for rk, rv in rule.ranges :
+          #   rk => rv
+          #   // Only include the range if at least one of the bounds is non-null
+          #   if rv.to_inclusive != null ? true : rv.from_inclusive != null
+          # }
         })
       }
     })
@@ -99,6 +131,8 @@ locals {
                   true
                   // It violates this range rule if it has a start port below the encapsulated from port, or a to port above the encapsulated to port
                   if(
+                    // If both the from and the to values are null, then it's like this range doesn't exist (no limits), so ignore it
+                    (encapsulator_range_value.from_inclusive == null && encapsulator_range_value.to_inclusive == null) ? false :
                     // If the encapsulated rule doesn't have this range key, it can't be encapsulated
                     !contains(keys(encapsulated.ranges), range_key) ? true : (
                       // First test the lower bound
@@ -115,7 +149,7 @@ locals {
                     )
                   )
                 ]
-              ) > 0 ? false : (
+                ) > 0 ? false : (
                 // Check if there are any discrete rules that are violated
                 length(
                   [
@@ -123,7 +157,7 @@ locals {
                     true
                     // If the value is equal, it matches so that's fine
                     // If it's not equal, we have to check if this rule's value encapsulates the encapsulated rule's discrete value
-                    if (
+                    if(
                       // If the encapsulated value doesn't have the key, it can't be encapsulated, that's a violation
                       !contains(keys(encapsulated.discretes), discrete_key) ? true : (
                         // It does have the key
@@ -131,7 +165,7 @@ locals {
                         encapsulator_discrete_value == encapsulated.discretes[discrete_key] ? false : (
                           // Otherwise, check if the value of the encapsulator encapsulates the value of the encapsulated
                           // If the encapsulator's value is null, that means it encapsulates everything, so that's fine
-                          
+
                           // See if the the encapsulator's discrete values covers all (null) other rvalues
                           try(local.discrete_encapsulation_encapsulated_values[index(local.discrete_encapsulation_primaries[group_key][discrete_key], encapsulator.discretes[discrete_key])], []) == null ? false : (
                             !contains(try(local.discrete_encapsulation_encapsulated_values[index(local.discrete_encapsulation_primaries[group_key][discrete_key], encapsulator.discretes[discrete_key])], []), encapsulated.discretes[discrete_key])
@@ -206,11 +240,10 @@ locals {
     })
   }
 
-
   // Get the complete set of range keys we're dealing with for each rule list.
   range_keys = {
-    for key, group in local.reverse_pass_encapsulate :
-    key => distinct(flatten([
+    for group_key, group in local.reverse_pass_encapsulate :
+    group_key => distinct(flatten([
       for rule in group.rules :
       keys(rule.ranges)
     ]))
@@ -218,13 +251,73 @@ locals {
 
   // Get the complete set of discrete keys we're dealing with for each rule list.
   discrete_keys = {
-    for key, group in local.reverse_pass_encapsulate :
-    key => distinct(flatten([
+    for group_key, group in local.reverse_pass_encapsulate :
+    group_key => distinct(flatten([
       for rule in group.rules :
       keys(rule.discretes)
     ]))
   }
 
-  // TODO: test nested encapsulation metadata and rules
-  // TODO: don't include non-rules fields in rule sets for intermediate steps
+  // Convert back to the original metadata form, since we don't need
+  // the temp values anymore.
+  sorted_metadata = {
+    for group_key, group in local.final_contiguous_squashed :
+    group_key => merge(group, {
+      rules = [
+        for rule in group.rules :
+        merge(rule, {
+          metadata = [
+            for original_rule_idx in sort([
+              for meta in rule.metadata :
+              // "sort" does a lexigraphical sort, so we need
+              // leading zeros on everything so all values are the
+              // same length.
+              format("%020d", meta.temp.original_rule_idx)
+            ]) :
+            [
+              for meta in rule.metadata :
+              meta.original
+              if meta.temp.original_rule_idx == tonumber(original_rule_idx)
+            ][0]
+          ]
+          contains_rules = [
+            // For some unknown reason, the "sort" function
+            // converts all values to strings, so we have to
+            // convert them back to numbers.
+            for idx in sort([
+              for meta in rule.metadata :
+              // "sort" does a lexigraphical sort, so we need
+              // leading zeros on everything so all values are the
+              // same length.
+              format("%020d", meta.temp.original_rule_idx)
+            ]) :
+            tonumber(idx)
+          ]
+        })
+      ]
+    })
+  }
+
+  // Sort the rules by the index of their first contained metadata,
+  // which was already sorted by merged rule order
+  sorted_squashed = {
+    for group_key, group in local.sorted_metadata :
+    group_key => merge(group, {
+      rules = [
+        for first_rule_idx in sort([
+          for rule in group.rules :
+          // "sort" does a lexigraphical sort, so we need
+          // leading zeros on everything so all values are the
+          // same length.
+          format("%020d", rule.contains_rules[0])
+        ]) :
+        [
+          for rule in group.rules :
+          rule
+          if rule.contains_rules[0] == tonumber(first_rule_idx)
+        ][0]
+      ]
+    })
+  }
+
 }

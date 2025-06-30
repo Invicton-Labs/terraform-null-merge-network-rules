@@ -3,5 +3,9 @@ output "squashed_rule_sets" {
 }
 
 output "debug" {
-  value = module.squash_ipv4.debug
+  value = {
+    squash_ipv4 = module.squash_ipv4.debug
+    # squashed_rule_sets_raw = module.squash_ipv4.squashed_rule_sets
+  }
 }
+

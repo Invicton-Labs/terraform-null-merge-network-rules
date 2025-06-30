@@ -37,11 +37,11 @@ EOF
     object(
       {
         discrete_encapsulation = optional(map(list(object({
-          primary = any
+          primary      = any
           encapsulated = list(any)
         }))), {})
-        discrete_equivalents   = optional(map(list(object({
-          primary = any
+        discrete_equivalents = optional(map(list(object({
+          primary      = any
           alternatives = list(any)
         }))), {})
         base2_align_range_keys = optional(list(string), [])
@@ -51,7 +51,7 @@ EOF
             from_inclusive = number
             to_inclusive   = number
           })), {})
-          metadata = optional(map(any))
+          metadata = optional(any, null)
         })), [])
       }
     )
@@ -75,15 +75,15 @@ EOF
         for dev in values(group.discrete_equivalents) :
         null
         // If any of the keys are found in any of the values, that's a problem
-        if length(setintersection([for pair in dev: pair.primary], flatten([for pair in dev: pair.alternatives]))) > 0
+        if length(setintersection([for pair in dev : pair.primary], flatten([for pair in dev : pair.alternatives]))) > 0
       ]
     ]))
     error_message = "For each set, none of the `primary` values for any `discrete_equivalents` key may be present in the `alternatives` values for that same key. The input does not meet this requirement:\n${join(", ", flatten([
       for group_key, group in var.rule_sets :
       [
         for dek, dev in group.discrete_equivalents :
-        "\t- Set \"${group_key}\", discrete key \"${dek}\" (values: ${join(", ", distinct(setintersection([for pair in dev: pair.primary], flatten([for pair in dev: pair.alternatives]))))})"
-        if length(setintersection([for pair in dev: pair.primary], flatten([for pair in dev: pair.alternatives]))) > 0
+        "\t- Set \"${group_key}\", discrete key \"${dek}\" (values: ${join(", ", distinct(setintersection([for pair in dev : pair.primary], flatten([for pair in dev : pair.alternatives]))))})"
+        if length(setintersection([for pair in dev : pair.primary], flatten([for pair in dev : pair.alternatives]))) > 0
       ]
     ]))}"
   }
@@ -97,7 +97,7 @@ EOF
         null
         // It's invalid if the length of the distinct set is different than the length of the complete set,
         // since that means that the complete set has duplicates.
-        if length(distinct(flatten([for pair in dev: pair.alternatives]))) != length(flatten([for pair in dev: pair.alternatives]))
+        if length(distinct(flatten([for pair in dev : pair.alternatives]))) != length(flatten([for pair in dev : pair.alternatives]))
       ]
     ]))
     error_message = "For each set, each `alternatives` value for each `discrete_equivalents` key must only appear in one `alternatives` value, and must not have any duplicates. The input does not meet this requirement:\n${join(", ", flatten([
@@ -105,12 +105,12 @@ EOF
       [
         for dek, dev in group.discrete_equivalents :
         "\t- Set \"${group_key}\", discrete key \"${dek}\" (values: ${join(", ", [
-        for v in flatten([for pair in dev: pair.alternatives]) :
+          for v in flatten([for pair in dev : pair.alternatives]) :
           v
           // Count how many instances of this value there are. If there's more than 1, it's a duplicate.
-          if length([for v2 in flatten([for pair in dev: pair.alternatives]) : v2 if v2 == v]) > 1
+          if length([for v2 in flatten([for pair in dev : pair.alternatives]) : v2 if v2 == v]) > 1
         ])})"
-        if length(distinct(flatten([for pair in dev: pair.alternatives]))) != length(flatten([for pair in dev: pair.alternatives]))
+        if length(distinct(flatten([for pair in dev : pair.alternatives]))) != length(flatten([for pair in dev : pair.alternatives]))
       ]
     ]))}"
   }

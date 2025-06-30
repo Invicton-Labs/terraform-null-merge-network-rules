@@ -43,7 +43,7 @@ locals {
 // Now that we've converted the CIDR to a decimal range,
 // squash the rules as we normally would.
 module "rule_squash" {
-  source    = "../rule-squash"
+  source    = "../generic-squash"
   rule_sets = local.with_cidr_ranges
 }
 

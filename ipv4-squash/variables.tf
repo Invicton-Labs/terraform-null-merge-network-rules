@@ -36,11 +36,11 @@ EOF
     object(
       {
         discrete_encapsulation = optional(map(list(object({
-          primary = any
+          primary      = any
           encapsulated = list(any)
         }))), {})
-        discrete_equivalents   = optional(map(list(object({
-          primary = any
+        discrete_equivalents = optional(map(list(object({
+          primary      = any
           alternatives = list(any)
         }))), {})
         rules = optional(list(object({
@@ -50,7 +50,7 @@ EOF
             from_inclusive = number
             to_inclusive   = number
           })), {})
-          metadata = optional(map(any))
+          metadata = optional(any, null)
         })), [])
       }
     )
@@ -68,9 +68,9 @@ EOF
       ]
     ]))
     error_message = "For each rule, the `cidr_ipv4` value must be a valid CIDR block. The input does not meet this requirement:\n${join("\n", flatten([
-      for group_key, group in var.rule_sets:
+      for group_key, group in var.rule_sets :
       [
-        for idx, rule in group.rules:
+        for idx, rule in group.rules :
         "\t- Set \"${group_key}\", rule at index ${idx} (value: \"${rule.cidr_ipv4 == null ? "null" : rule.cidr_ipv4}\")"
         if rule.cidr_ipv4 == null ? false : !can(cidrhost(rule.cidr_ipv4, 0))
       ]

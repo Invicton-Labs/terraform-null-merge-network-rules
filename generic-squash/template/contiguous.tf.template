@@ -1,7 +1,7 @@
 locals {
-  neg_inf     = -9e500
-  pos_inf     = 9e500
-  digit_count = 30
+  neg_inf     = -9e99
+  pos_inf     = 9e99
+  digit_count = 100
   // This is what we consider whole numbers for log2 calculations.
   // We use this value because Terraform returns 15 decimal places.
   log2_precision_allowance = 1e-14
@@ -23,7 +23,43 @@ locals {
       rules = [
         for rule_idx, rule in group.rules :
         merge(rule, {
-          sort_key = contains(keys(rule.ranges), local.range_keys[group_key][${range_loop_idx}]) ? "$${format("%0$${local.digit_count}d", rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive == null ? local.neg_inf : rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive)}-$${format("%0$${local.digit_count}d", rule.ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive == null ? local.pos_inf : rule.ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive)}-$${rule_idx}" : "no-key-$${rule_idx}"
+          // The sort key uses a complex structure.
+          sort_key = contains(keys(rule.ranges), local.range_keys[group_key][${range_loop_idx}]) ? "$${
+            // First, we use a JSON encoding of all of the discrete values. This ensures that rules are first
+            // sorted by equivalency on all discretes (since they can't be merged if the discretes are different).
+            jsonencode(rule.discretes)
+          }-$${
+            // Second, we use a JSON encoding of all ranges except the one we're considering to merge on.
+            // This ensures that the rules are sorted by equivalency on all other ranges (since they can't be
+            // merged if any of the other ranges are different).
+            jsonencode({
+              for k, v in rule.ranges:
+              k => v
+              if k != local.range_keys[group_key][${range_loop_idx}]
+            })
+          }-$${
+            // Third, we use a fixed-length decimal representation of the "from" value of the range in question.
+            // This ensures that when looking forward for possible contiguity, the next rule will always have 
+            // a "from" value that is the same or greater.
+            format("%s%0$${local.digit_count}d",
+              rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive == null ? "" : rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive < 0 ? "" : "0",
+              rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive == null ? local.neg_inf : rule.ranges[local.range_keys[group_key][${range_loop_idx}]].from_inclusive
+              )}-$${
+            // Fourth, we use a fixed-length decimal representation of the "to" value of the range in question.
+            // This ensures that when looking forward for possible contiguity, the next rule will always have 
+            // a "to" value that is the same or greater.
+            format("%s%0$${local.digit_count}d",
+              rule.ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive == null ? "0" : rule.ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive < 0 ? "" : "0",
+              rule.ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive == null ? local.pos_inf : rule.ranges[local.range_keys[group_key][${range_loop_idx}]].to_inclusive
+          )}-$${
+            // Finally, we add the rule index, so there's always guaranteed to be a unique sort key for each rule,
+            // even if somehow they are otherwise identical.
+            rule_idx
+          }" : (
+            // And if the rule we're looking at doesn't have the range key in question, use
+            // a sort key that doesn't really matter because this rule will never be merged.
+            "no-key-$${rule_idx}"
+          )
         })
       ]
     })
@@ -159,11 +195,13 @@ locals {
       rules = [
         for rule_idx, rule in group.rules :
         merge(rule, {
-          contiguous_forward_count = length([
+          // This works by creating a list of bools of whether a rule is contiguous with the next one,
+          // then finding the first false value. This returns the number of contiguous rules without a break.
+          // The try is for when they are all contiguous, where index will throw an error when trying to find a false.
+          contiguous_forward_count = try(index([
             for compare_rule_idx in range(rule_idx, length(group.rules) - 1) :
-            null
-            if group.rules[compare_rule_idx].contiguous_with_next
-          ])
+            group.rules[compare_rule_idx].contiguous_with_next
+          ], false), length(group.rules) - 1 - rule_idx)
         })
       ]
     })
@@ -242,7 +280,7 @@ locals {
   // keys there were, then get the final result from that iteration of squashing.
   // We do it this way so we don't waste memory by holding 100+ iterations of squashing
   // in memory with most of them just being a replicate of the previous level.
-  final_squashed = {
+  final_contiguous_squashed = {
     for group_key in keys(local.reverse_pass_encapsulate) :
     group_key => local.squashed_sets[length(local.range_keys[group_key]) - 1][group_key]
   }

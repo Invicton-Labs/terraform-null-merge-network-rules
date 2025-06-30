@@ -5,19 +5,19 @@ locals {
   discrete_encapsulation = {
     protocol = [
       {
-        primary = -1
+        primary      = -1
         encapsulated = null
       }
     ]
     icmp_type = [
       {
-        primary = -1
+        primary      = -1
         encapsulated = null
       }
     ]
     icmp_code = [
       {
-        primary = -1
+        primary      = -1
         encapsulated = null
       }
     ]
@@ -27,7 +27,7 @@ locals {
 
   discrete_equivalents = {
     // AWS uses IANA protocol numbers
-    protocol = local.iana_protocol_equivalencies
+    protocol  = local.iana_protocol_equivalencies
     icmp_type = []
     icmp_code = []
     egress    = []
@@ -49,7 +49,7 @@ module "squash_ipv4" {
           discretes = {
             egress = rule.egress
             allow  = rule.allow
-            // Uppercase the protocol so it matches the IANA equivalencies
+            // Uppercase the protocol so it matches the IANA equivalencies.
             protocol  = upper(tostring(rule.protocol))
             icmp_type = rule.icmp_type
             icmp_code = rule.icmp_code
@@ -73,15 +73,19 @@ locals {
     group_key => [
       for rule in group.rules :
       {
-        egress     = rule.discretes.egress
-        allow      = rule.discretes.allow
-        protocol   = rule.discretes.protocol
+        egress = rule.discretes.egress
+        allow  = rule.discretes.allow
+        // This may have been converted to a string during the equivalency phase
+        protocol   = tonumber(rule.discretes.protocol)
         cidr_block = rule.cidr_ipv4
         from_port  = rule.ranges.ports.from_inclusive
         to_port    = rule.ranges.ports.to_inclusive
-        icmp_type  = rule.discretes.icmp_type
-        icmp_code  = rule.discretes.icmp_code
-        metadata   = rule.metadata
+        // This may have been converted to a string during the equivalency phase
+        icmp_type = tonumber(rule.discretes.icmp_type)
+        // This may have been converted to a string during the equivalency phase
+        icmp_code      = tonumber(rule.discretes.icmp_code)
+        metadata       = rule.metadata
+        contains_rules = rule.contains_rules
       }
     ]
   }
