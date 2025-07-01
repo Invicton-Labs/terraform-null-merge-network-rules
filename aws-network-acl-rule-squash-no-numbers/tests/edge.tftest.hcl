@@ -35,13 +35,13 @@ run "large_duplicate_collapse" {
   variables {
     rule_sets = {
       "set-0" = [for i in range(10) : {
-        egress     = false
-        allow      = true
-        protocol   = "tcp"
-        cidr_block = "10.0.0.0/16"
-        from_port  = 80
-        to_port    = null
-        metadata   = { id = i }
+        egress      = false
+        rule_action = "allow"
+        protocol    = "tcp"
+        cidr_block  = "10.0.0.0/16"
+        from_port   = 80
+        to_port     = null
+        metadata    = { id = i }
       }]
     }
   }
@@ -62,13 +62,13 @@ run "port_range_contiguous" {
     rule_sets = {
       "set-0" = [
         for r in [1000, 2000, 3000, 4000] : {
-          egress     = true
-          allow      = true
-          protocol   = 6
-          cidr_block = "0.0.0.0/0"
-          from_port  = r
-          to_port    = r + 999
-          metadata   = { base = r }
+          egress      = true
+          rule_action = "allow"
+          protocol    = 6
+          cidr_block  = "0.0.0.0/0"
+          from_port   = r
+          to_port     = r + 999
+          metadata    = { base = r }
         }
       ]
     }
@@ -90,22 +90,22 @@ run "cidr_supernet_23" {
     rule_sets = {
       "set-0" = [
         {
-          egress     = false
-          allow      = true
-          protocol   = "udp"
-          cidr_block = "192.168.0.0/24"
-          from_port  = 53
-          to_port    = null
-          metadata   = { id = 1 }
+          egress      = false
+          rule_action = "allow"
+          protocol    = "udp"
+          cidr_block  = "192.168.0.0/24"
+          from_port   = 53
+          to_port     = null
+          metadata    = { id = 1 }
         },
         {
-          egress     = false
-          allow      = true
-          protocol   = 17
-          cidr_block = "192.168.1.0/24"
-          from_port  = 53
-          to_port    = null
-          metadata   = { id = 2 }
+          egress      = false
+          rule_action = "allow"
+          protocol    = 17
+          cidr_block  = "192.168.1.0/24"
+          from_port   = 53
+          to_port     = null
+          metadata    = { id = 2 }
         },
       ]
     }
@@ -127,22 +127,22 @@ run "cidr_gap_no_merge" {
     rule_sets = {
       "set-0" = [
         {
-          egress     = false
-          allow      = true
-          protocol   = 6
-          cidr_block = "192.168.0.0/24"
-          from_port  = 22
-          to_port    = null
-          metadata   = { id = 1 }
+          egress      = false
+          rule_action = "allow"
+          protocol    = 6
+          cidr_block  = "192.168.0.0/24"
+          from_port   = 22
+          to_port     = null
+          metadata    = { id = 1 }
         },
         {
-          egress     = false
-          allow      = true
-          protocol   = "tcp"
-          cidr_block = "192.168.2.0/24" # gap at .1.0/24
-          from_port  = 22
-          to_port    = null
-          metadata   = { id = 2 }
+          egress      = false
+          rule_action = "allow"
+          protocol    = "tcp"
+          cidr_block  = "192.168.2.0/24" # gap at .1.0/24
+          from_port   = 22
+          to_port     = null
+          metadata    = { id = 2 }
         },
       ]
     }
@@ -164,22 +164,22 @@ run "port_gap_no_merge" {
     rule_sets = {
       "set-0" = [
         {
-          egress     = false
-          allow      = true
-          protocol   = 6
-          cidr_block = "10.0.0.0/16"
-          from_port  = 1000
-          to_port    = 1500
-          metadata   = { id = 1 }
+          egress      = false
+          rule_action = "allow"
+          protocol    = 6
+          cidr_block  = "10.0.0.0/16"
+          from_port   = 1000
+          to_port     = 1500
+          metadata    = { id = 1 }
         },
         {
-          egress     = false
-          allow      = true
-          protocol   = "tcp"
-          cidr_block = "10.0.0.0/16"
-          from_port  = 1502
-          to_port    = 2000
-          metadata   = { id = 2 }
+          egress      = false
+          rule_action = "allow"
+          protocol    = "tcp"
+          cidr_block  = "10.0.0.0/16"
+          from_port   = 1502
+          to_port     = 2000
+          metadata    = { id = 2 }
         },
       ]
     }
@@ -200,8 +200,8 @@ run "udp_vs_tcp" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 53, to_port = 53, metadata = { id = 1 } },
-        { egress = false, allow = true, protocol = "udp", cidr_block = "10.0.0.0/16", from_port = 53, to_port = 53, metadata = { id = 2 } },
+        { egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 53, to_port = 53, metadata = { id = 1 } },
+        { egress = false, rule_action = "allow", protocol = "udp", cidr_block = "10.0.0.0/16", from_port = 53, to_port = 53, metadata = { id = 2 } },
       ]
     }
   }
@@ -221,8 +221,8 @@ run "direction_partition" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = 6, cidr_block = "0.0.0.0/0", from_port = 443, to_port = 443, metadata = { id = 1 } },
-        { egress = true, allow = true, protocol = "tcp", cidr_block = "0.0.0.0/0", from_port = 443, to_port = 443, metadata = { id = 2 } },
+        { egress = false, rule_action = "allow", protocol = 6, cidr_block = "0.0.0.0/0", from_port = 443, to_port = 443, metadata = { id = 1 } },
+        { egress = true, rule_action = "allow", protocol = "tcp", cidr_block = "0.0.0.0/0", from_port = 443, to_port = 443, metadata = { id = 2 } },
       ]
     }
   }
@@ -241,8 +241,8 @@ run "allow_deny_separate" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = 6, cidr_block = "10.0.0.0/16", from_port = 22, to_port = null, metadata = { id = 1 } },
-        { egress = false, allow = false, protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 22, to_port = null, metadata = { id = 2 } },
+        { egress = false, rule_action = "allow", protocol = 6, cidr_block = "10.0.0.0/16", from_port = 22, to_port = null, metadata = { id = 1 } },
+        { egress = false, rule_action = "deny", protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 22, to_port = null, metadata = { id = 2 } },
       ]
     }
   }
@@ -261,8 +261,8 @@ run "icmp_any_vs_specific" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = "icmp", cidr_block = "0.0.0.0/0", icmp_type = null, icmp_code = null, from_port = null, to_port = null, metadata = { id = 1 } },
-        { egress = false, allow = true, protocol = 1, cidr_block = "0.0.0.0/0", icmp_type = 8, icmp_code = 0, from_port = null, to_port = null, metadata = { id = 2 } },
+        { egress = false, rule_action = "allow", protocol = "icmp", cidr_block = "0.0.0.0/0", icmp_type = null, icmp_code = null, from_port = null, to_port = null, metadata = { id = 1 } },
+        { egress = false, rule_action = "allow", protocol = 1, cidr_block = "0.0.0.0/0", icmp_type = 8, icmp_code = 0, from_port = null, to_port = null, metadata = { id = 2 } },
       ]
     }
   }
@@ -281,8 +281,8 @@ run "icmp_type_diff_code" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = 1, cidr_block = "0.0.0.0/0", icmp_type = 3, icmp_code = 0, from_port = null, to_port = null, metadata = { id = 1 } },
-        { egress = false, allow = true, protocol = "icmp", cidr_block = "0.0.0.0/0", icmp_type = 3, icmp_code = 1, from_port = null, to_port = null, metadata = { id = 2 } },
+        { egress = false, rule_action = "allow", protocol = 1, cidr_block = "0.0.0.0/0", icmp_type = 3, icmp_code = 0, from_port = null, to_port = null, metadata = { id = 1 } },
+        { egress = false, rule_action = "allow", protocol = "icmp", cidr_block = "0.0.0.0/0", icmp_type = 3, icmp_code = 1, from_port = null, to_port = null, metadata = { id = 2 } },
       ]
     }
   }
@@ -300,8 +300,8 @@ run "two_sets_identical_rule" {
   module { source = "./" }
   variables {
     rule_sets = {
-      A = [{ egress = false, allow = true, protocol = "tcp", cidr_block = "10.10.0.0/16", from_port = 443, to_port = 443, metadata = { id = 1 } }],
-      B = [{ egress = false, allow = true, protocol = "tcp", cidr_block = "10.10.0.0/16", from_port = 443, to_port = 443, metadata = { id = 2 } }],
+      A = [{ egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "10.10.0.0/16", from_port = 443, to_port = 443, metadata = { id = 1 } }],
+      B = [{ egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "10.10.0.0/16", from_port = 443, to_port = 443, metadata = { id = 2 } }],
     }
   }
   assert {
@@ -318,8 +318,8 @@ run "set_size_variation" {
   module { source = "./" }
   variables {
     rule_sets = {
-      small = [{ egress = false, allow = true, protocol = 6, cidr_block = "192.0.2.0/24", from_port = 22, to_port = null, metadata = { id = 1 } }],
-      big   = [for i in range(5) : { egress = false, allow = true, protocol = "tcp", cidr_block = "192.0.2.0/24", from_port = 22, to_port = null, metadata = { id = i } }],
+      small = [{ egress = false, rule_action = "allow", protocol = 6, cidr_block = "192.0.2.0/24", from_port = 22, to_port = null, metadata = { id = 1 } }],
+      big   = [for i in range(5) : { egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "192.0.2.0/24", from_port = 22, to_port = null, metadata = { id = i } }],
     }
   }
   assert {
@@ -337,8 +337,8 @@ run "metadata_aggregation" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 443, to_port = 443, metadata = { tag = "one" } },
-        { egress = false, allow = true, protocol = 6, cidr_block = "10.0.0.0/16", from_port = 443, to_port = 443, metadata = { tag = "two" } },
+        { egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 443, to_port = 443, metadata = { tag = "one" } },
+        { egress = false, rule_action = "allow", protocol = 6, cidr_block = "10.0.0.0/16", from_port = 443, to_port = 443, metadata = { tag = "two" } },
       ]
     }
   }
@@ -356,7 +356,7 @@ run "contains_rules_indexes" {
   module { source = "./" }
   variables {
     rule_sets = {
-      "set-0" = [for i in range(3) : { egress = false, allow = true, protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 80, to_port = null, metadata = { i = i } }]
+      "set-0" = [for i in range(3) : { egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 80, to_port = null, metadata = { i = i } }]
     }
   }
   assert {
@@ -374,8 +374,8 @@ run "protocol_case" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = "TCP", cidr_block = "10.0.0.0/16", from_port = 25, to_port = 25, metadata = { case = "upper" } },
-        { egress = false, allow = true, protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 25, to_port = 25, metadata = { case = "lower" } },
+        { egress = false, rule_action = "allow", protocol = "TCP", cidr_block = "10.0.0.0/16", from_port = 25, to_port = 25, metadata = { case = "upper" } },
+        { egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 25, to_port = 25, metadata = { case = "lower" } },
       ]
     }
   }
@@ -394,8 +394,8 @@ run "null_vs_zero_port" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = 6, cidr_block = "10.0.0.0/16", from_port = null, to_port = null, metadata = { id = 1 } },
-        { egress = false, allow = true, protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 0, to_port = 0, metadata = { id = 2 } },
+        { egress = false, rule_action = "allow", protocol = 6, cidr_block = "10.0.0.0/16", from_port = null, to_port = null, metadata = { id = 1 } },
+        { egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 0, to_port = 0, metadata = { id = 2 } },
       ]
     }
   }
@@ -414,8 +414,8 @@ run "null_vs_equal_to_port" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 8080, to_port = null, metadata = { id = 1 } },
-        { egress = false, allow = true, protocol = 6, cidr_block = "10.0.0.0/16", from_port = 8080, to_port = 8080, metadata = { id = 2 } },
+        { egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 8080, to_port = null, metadata = { id = 1 } },
+        { egress = false, rule_action = "allow", protocol = 6, cidr_block = "10.0.0.0/16", from_port = 8080, to_port = 8080, metadata = { id = 2 } },
       ]
     }
   }
@@ -434,13 +434,13 @@ run "ten_sets_independent" {
   variables {
     rule_sets = { for idx in range(10) : "set-${idx}" => [
       for dup in range(3) : {
-        egress     = false
-        allow      = true
-        protocol   = "tcp"
-        cidr_block = "172.${idx}.0.0/16"
-        from_port  = 22
-        to_port    = null
-        metadata   = { dup = dup }
+        egress      = false
+        rule_action = "allow"
+        protocol    = "tcp"
+        cidr_block  = "172.${idx}.0.0/16"
+        from_port   = 22
+        to_port     = null
+        metadata    = { dup = dup }
       }
     ] }
   }
@@ -459,8 +459,8 @@ run "wide_port_superset" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = true, allow = true, protocol = 6, cidr_block = "0.0.0.0/0", from_port = 0, to_port = 65535, metadata = { id = "wide" } },
-        { egress = true, allow = true, protocol = "tcp", cidr_block = "0.0.0.0/0", from_port = 22, to_port = 22, metadata = { id = "narrow" } },
+        { egress = true, rule_action = "allow", protocol = 6, cidr_block = "0.0.0.0/0", from_port = 0, to_port = 65535, metadata = { id = "wide" } },
+        { egress = true, rule_action = "allow", protocol = "tcp", cidr_block = "0.0.0.0/0", from_port = 22, to_port = 22, metadata = { id = "narrow" } },
       ]
     }
   }
@@ -479,8 +479,8 @@ run "cidr_superset_zero" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = "tcp", cidr_block = "0.0.0.0/0", from_port = 80, to_port = 80, metadata = { id = 1 } },
-        { egress = false, allow = true, protocol = 6, cidr_block = "0.0.0.0/1", from_port = 80, to_port = 80, metadata = { id = 2 } },
+        { egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "0.0.0.0/0", from_port = 80, to_port = 80, metadata = { id = 1 } },
+        { egress = false, rule_action = "allow", protocol = 6, cidr_block = "0.0.0.0/1", from_port = 80, to_port = 80, metadata = { id = 2 } },
       ]
     }
   }
@@ -499,8 +499,8 @@ run "port_overlap" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = true, allow = true, protocol = 6, cidr_block = "10.0.0.0/16", from_port = 10, to_port = 20, metadata = { id = 1 } },
-        { egress = true, allow = true, protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 15, to_port = 25, metadata = { id = 2 } },
+        { egress = true, rule_action = "allow", protocol = 6, cidr_block = "10.0.0.0/16", from_port = 10, to_port = 20, metadata = { id = 1 } },
+        { egress = true, rule_action = "allow", protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 15, to_port = 25, metadata = { id = 2 } },
       ]
     }
   }
@@ -519,8 +519,8 @@ run "cidr_subset" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = 6, cidr_block = "192.168.0.0/24", from_port = 80, to_port = 80, metadata = { id = 1 } },
-        { egress = false, allow = true, protocol = "tcp", cidr_block = "192.168.0.128/25", from_port = 80, to_port = 80, metadata = { id = 2 } },
+        { egress = false, rule_action = "allow", protocol = 6, cidr_block = "192.168.0.0/24", from_port = 80, to_port = 80, metadata = { id = 1 } },
+        { egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "192.168.0.128/25", from_port = 80, to_port = 80, metadata = { id = 2 } },
       ]
     }
   }
@@ -539,9 +539,9 @@ run "three_protocols" {
   variables {
     rule_sets = {
       "set-0" = [
-        { egress = false, allow = true, protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 22, to_port = 22, metadata = { id = "tcp" } },
-        { egress = false, allow = true, protocol = "udp", cidr_block = "10.0.0.0/16", from_port = 22, to_port = 22, metadata = { id = "udp" } },
-        { egress = false, allow = true, protocol = "icmp", cidr_block = "10.0.0.0/16", icmp_type = 8, icmp_code = 0, from_port = null, to_port = null, metadata = { id = "icmp" } },
+        { egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "10.0.0.0/16", from_port = 22, to_port = 22, metadata = { id = "tcp" } },
+        { egress = false, rule_action = "allow", protocol = "udp", cidr_block = "10.0.0.0/16", from_port = 22, to_port = 22, metadata = { id = "udp" } },
+        { egress = false, rule_action = "allow", protocol = "icmp", cidr_block = "10.0.0.0/16", icmp_type = 8, icmp_code = 0, from_port = null, to_port = null, metadata = { id = "icmp" } },
       ]
     }
   }
@@ -560,7 +560,7 @@ run "random_ports_no_merge" {
   variables {
     rule_sets = {
       "set-0" = [for p in [22, 80, 123, 161, 389, 443, 465, 587, 993, 3389] : {
-        egress = false, allow = true, protocol = "tcp", cidr_block = "10.1.0.0/16", from_port = p, to_port = p, metadata = { p = p }
+        egress = false, rule_action = "allow", protocol = "tcp", cidr_block = "10.1.0.0/16", from_port = p, to_port = p, metadata = { p = p }
       }]
     }
   }
@@ -578,8 +578,8 @@ run "mixed_direction_action_sets" {
   module { source = "./" }
   variables {
     rule_sets = {
-      IN_ALLOW = [{ egress = false, allow = true, protocol = 6, cidr_block = "0.0.0.0/0", from_port = 8080, to_port = 8080, metadata = { id = 1 } }],
-      OUT_DENY = [{ egress = true, allow = false, protocol = "tcp", cidr_block = "0.0.0.0/0", from_port = 8080, to_port = 8080, metadata = { id = 2 } }],
+      IN_ALLOW = [{ egress = false, rule_action = "allow", protocol = 6, cidr_block = "0.0.0.0/0", from_port = 8080, to_port = 8080, metadata = { id = 1 } }],
+      OUT_DENY = [{ egress = true, rule_action = "deny", protocol = "tcp", cidr_block = "0.0.0.0/0", from_port = 8080, to_port = 8080, metadata = { id = 2 } }],
     }
   }
   assert {
@@ -596,9 +596,9 @@ run "icmp_echo_three_sets" {
   module { source = "./" }
   variables {
     rule_sets = {
-      S1 = [{ egress = false, allow = true, protocol = "icmp", cidr_block = "0.0.0.0/0", icmp_type = 8, icmp_code = 0, from_port = null, to_port = null, metadata = { s = 1 } }],
-      S2 = [{ egress = false, allow = true, protocol = "icmp", cidr_block = "0.0.0.0/0", icmp_type = 8, icmp_code = 0, from_port = null, to_port = null, metadata = { s = 2 } }],
-      S3 = [{ egress = false, allow = true, protocol = 1, cidr_block = "0.0.0.0/0", icmp_type = 8, icmp_code = 0, from_port = null, to_port = null, metadata = { s = 3 } }],
+      S1 = [{ egress = false, rule_action = "allow", protocol = "icmp", cidr_block = "0.0.0.0/0", icmp_type = 8, icmp_code = 0, from_port = null, to_port = null, metadata = { s = 1 } }],
+      S2 = [{ egress = false, rule_action = "allow", protocol = "icmp", cidr_block = "0.0.0.0/0", icmp_type = 8, icmp_code = 0, from_port = null, to_port = null, metadata = { s = 2 } }],
+      S3 = [{ egress = false, rule_action = "allow", protocol = 1, cidr_block = "0.0.0.0/0", icmp_type = 8, icmp_code = 0, from_port = null, to_port = null, metadata = { s = 3 } }],
     }
   }
   assert {
@@ -616,13 +616,13 @@ run "hundred_rules_collapse" {
   variables {
     rule_sets = {
       huge = [for i in range(100) : {
-        egress     = false
-        allow      = true
-        protocol   = "tcp"
-        cidr_block = "198.51.100.0/24"
-        from_port  = 8080
-        to_port    = 8080
-        metadata   = { i = i }
+        egress      = false
+        rule_action = "allow"
+        protocol    = "tcp"
+        cidr_block  = "198.51.100.0/24"
+        from_port   = 8080
+        to_port     = 8080
+        metadata    = { i = i }
       }]
     }
   }

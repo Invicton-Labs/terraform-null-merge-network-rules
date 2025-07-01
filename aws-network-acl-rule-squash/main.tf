@@ -1,77 +1,35 @@
-
 locals {
-  // Discrete encapsulations and equivalencies are found here:
-  // https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkAclEntry.html
-  discrete_encapsulation = {
-    protocol  = local.protocol_encapsulations
-    icmp_type = local.icmp_type_encapsulations
-    icmp_code = local.icmp_code_encapsulations
-    egress    = []
-    allow     = []
-  }
-
-  discrete_equivalents = {
-    // AWS uses IANA protocol numbers
-    protocol  = local.iana_protocol_equivalencies
-    icmp_type = []
-    icmp_code = []
-    egress    = []
-    allow     = []
-  }
-}
-
-module "squash_ipv4" {
-  source = "../ipv4-squash"
-  rule_sets = {
-    for group_key, group in var.rule_sets :
-    group_key => {
-      discrete_encapsulation = local.discrete_encapsulation
-      discrete_equivalents   = local.discrete_equivalents
-      rules = [
-        for rule in group :
-        {
-          cidr_ipv4 = rule.cidr_block
-          discretes = {
-            egress = rule.egress
-            allow  = rule.allow
-            // Uppercase the protocol so it matches the IANA equivalencies.
-            protocol  = upper(tostring(rule.protocol))
-            icmp_type = rule.icmp_type
-            icmp_code = rule.icmp_code
-          }
-          ranges = {
-            ports = {
-              from_inclusive = rule.from_port
-              to_inclusive   = rule.to_port
-            }
-          }
-          metadata = rule.metadata
-        }
-      ]
-    }
-  }
-}
-
-locals {
-  squashed = {
-    for group_key, group in module.squash_ipv4.squashed_rule_sets :
-    group_key => [
-      for rule in group.rules :
+  // Since the squash module uses a map, we need to get the keys and sort
+  // them so we can convert it back to a list of rule sets.
+  sorted_rule_set_keys = sort(keys(module.squash.squashed_rule_sets))
+  squashed_as_list = [
+    for group_key in local.sorted_rule_set_keys :
+    module.squash.squashed_rule_sets[group_key]
+  ]
+  // Sweeten the output with extra fields, like rule numbers
+  final_rules = flatten([
+    for group_idx, group in local.squashed_as_list :
+    [
+      for rule_idx, rule in group :
       {
-        egress = rule.discretes.egress
-        allow  = rule.discretes.allow
-        // This may have been converted to a string during the equivalency phase
-        protocol   = tonumber(rule.discretes.protocol)
-        cidr_block = rule.cidr_ipv4
-        from_port  = rule.ranges.ports.from_inclusive
-        to_port    = rule.ranges.ports.to_inclusive
-        // This may have been converted to a string during the equivalency phase
-        icmp_type = tonumber(rule.discretes.icmp_type)
-        // This may have been converted to a string during the equivalency phase
-        icmp_code      = tonumber(rule.discretes.icmp_code)
+        egress = var.egress
+        // Ensure there are no collisions in rule numbers.
+        // Always start the numbering from the total count of previous
+        // rules, plus 1 for 1-based rule number indexing.
+        rule_number = 1 + sum(concat([0], [
+          for prev_group_idx in range(0, group_idx) :
+          length(local.squashed_as_list[prev_group_idx])
+        ])) + rule_idx
+        rule_action    = rule.rule_action
+        protocol       = rule.protocol
+        cidr_block     = rule.cidr_block
+        from_port      = rule.from_port
+        to_port        = rule.to_port
+        icmp_type      = rule.icmp_type
+        icmp_code      = rule.icmp_code
         metadata       = rule.metadata
         contains_rules = rule.contains_rules
       }
     ]
-  }
+  ])
 }

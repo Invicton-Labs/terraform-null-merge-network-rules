@@ -1,144 +1,49 @@
 variable "rule_sets" {
-  nullable = false
-  type = map(list(object({
-    egress     = bool
-    allow      = bool
-    protocol   = any
-    cidr_block = string
-    from_port  = optional(number, null)
-    to_port    = optional(number, null)
-    icmp_type  = optional(number, null)
-    icmp_code  = optional(number, null)
-    metadata   = optional(any, null)
-  })))
+  description = <<EOF
+A list of rule groups. Rule numbers in the output rules start at 1, and are prepared in the same order that the inputs are provided.
 
-  // Verify that the protocol is either a string or a number
-  validation {
-    condition = 0 == length(flatten([
-      for group_key, group in var.rule_sets :
-      [
-        for rule in group :
-        null
-        if !contains(["string", "number"], rule.protocol == null ? "null" : can(length(rule.protocol)) ? (
-          // It's either a map, object, list, set, or string
-          can(keys(rule.protocol)) ? (
-            // It has keys, so it's either a map or object
-            can(tomap(rule.protocol)) ? "map" : "object"
-            ) : (
-            // It doen't have keys, so it's a list, set, or string
-            can(flatten(rule.protocol)) ? (
-              // It can be flattened, so it's a list or set
-              can(coalescelist(rule.protocol, [null])) ? "list" : "set"
-            ) : "string"
-          )
-          ) : (
-          // It's either a number or a bool
-          can(tobool(rule.protocol)) ? "bool" : "number"
-        ))
-      ]
-    ]))
-    error_message = "For each rule, the `protocol` must be either a string or a number. The input does not meet this requirement:\n${join("\n", flatten([
-      for group_key, group in var.rule_sets :
-      [
-        for idx, rule in group :
-        "\t- Set \"${group_key}\", rule at index ${idx} (value: \"${rule.protocol == null || !can(tostring(rule.protocol)) ? jsonencode(rule.protocol) : rule.protocol}\")"
-        if !contains(["string", "number"], rule.protocol == null ? "null" : can(length(rule.protocol)) ? (
-          // It's either a map, object, list, set, or string
-          can(keys(rule.protocol)) ? (
-            // It has keys, so it's either a map or object
-            can(tomap(rule.protocol)) ? "map" : "object"
-            ) : (
-            // It doen't have keys, so it's a list, set, or string
-            can(flatten(rule.protocol)) ? (
-              // It can be flattened, so it's a list or set
-              can(coalescelist(rule.protocol, [null])) ? "list" : "set"
-            ) : "string"
-          )
-          ) : (
-          // It's either a number or a bool
-          can(tobool(rule.protocol)) ? "bool" : "number"
-        ))
-      ]
-    ]))}"
-  }
+Each rule group has:
+- A `rule_action`, which can be "allow" or "deny" (whether it's a group of allow or deny rules)
+- A list of rules to be squashed
+EOF
+  nullable    = false
+  type = list(object({
+    rule_action = string
+    rules = list(object({
+      protocol   = any
+      cidr_block = string
+      from_port  = optional(number, null)
+      to_port    = optional(number, null)
+      icmp_type  = optional(number, null)
+      icmp_code  = optional(number, null)
+      metadata   = optional(any, null)
+    }))
+  }))
+}
 
-  // Verify that the "allow" value is a valid boolean
-  validation {
-    condition = 0 == length(flatten([
-      for group_key, group in var.rule_sets :
-      [
-        for rule in group :
-        null
-        if rule.allow == null
-      ]
-    ]))
-    error_message = "For each rule, the `allow` value must be true or false (not null). The input does not meet this requirement:\n${join("\n", flatten([
-      for group_key, group in var.rule_sets :
-      [
-        for idx, rule in group :
-        "\t- Set \"${group_key}\", rule at index ${idx}"
-        if rule.allow == null
-      ]
-    ]))}"
-  }
+variable "egress" {
+  description = "Whether or not it's a group of egress rules. This is a separate variable because ingress and egress rules use separate rule number indexing (no crossover), so there should never be both ingress and egress rules merged in this module at the same time."
+  nullable    = false
+  type        = bool
+}
 
-  // Verify that the "egress" value is a valid boolean
-  validation {
-    condition = 0 == length(flatten([
-      for group_key, group in var.rule_sets :
-      [
-        for rule in group :
-        null
-        if rule.egress == null
-      ]
-    ]))
-    error_message = "For each rule, the `egress` value must be true or false (not null). The input does not meet this requirement:\n${join("\n", flatten([
-      for group_key, group in var.rule_sets :
-      [
-        for idx, rule in group :
-        "\t- Set \"${group_key}\", rule at index ${idx}"
-        if rule.egress == null
-      ]
-    ]))}"
-  }
-
-  // Verify that the "cidr_block" value is valid
-  validation {
-    condition = 0 == length(flatten([
-      for group_key, group in var.rule_sets :
-      [
-        for rule in group :
-        null
-        if rule.cidr_block == null ? true : !can(cidrhost(rule.cidr_block, 0))
-      ]
-    ]))
-    error_message = "For each rule, the `cidr_block` value must be a valid CIDR block. The input does not meet this requirement:\n${join("\n", flatten([
-      for group_key, group in var.rule_sets :
-      [
-        for idx, rule in group :
-        "\t- Set \"${group_key}\", rule at index ${idx} (value: \"${rule.cidr_block == null ? "null" : rule.cidr_block}\")"
-        if rule.cidr_block == null ? true : !can(cidrhost(rule.cidr_block, 0))
-      ]
-    ]))}"
-  }
-
-  // Verify that all protocols are valid strings (if they're strings)
-  validation {
-    condition = 0 == length(flatten([
-      for group_key, group in var.rule_sets :
-      [
-        for rule in group :
-        null
-        if rule.protocol == null ? false : can(tonumber(rule.protocol)) ? false : !contains(local.all_protocol_strings, upper(rule.protocol))
-      ]
-    ]))
-    error_message = "For each rule, the `protocol` value must be either a number or a valid protocol string name. The input does not meet this requirement:\n${join("\n", flatten([
-      for group_key, group in var.rule_sets :
-      [
-        for idx, rule in group :
-        "\t- Set \"${group_key}\", rule at index ${idx} (value: \"${rule.protocol == null ? "null" : rule.protocol}\")"
-        if rule.protocol == null ? false : can(tonumber(rule.protocol)) ? false : !contains(local.all_protocol_strings, upper(rule.protocol))
-      ]
-    ]))}"
+module "squash" {
+  source = "../aws-network-acl-rule-squash-no-numbers"
+  rule_sets = {
+    for rule_set_idx, rule_set in var.rule_sets :
+    format("%020d", rule_set_idx) => [
+      for rule in rule_set.rules :
+      {
+        egress      = var.egress
+        rule_action = rule_set.rule_action
+        protocol    = rule.protocol
+        cidr_block  = rule.cidr_block
+        from_port   = rule.from_port
+        to_port     = rule.to_port
+        icmp_type   = rule.icmp_type
+        icmp_code   = rule.icmp_code
+        metadata    = rule.metadata
+      }
+    ]
   }
 }
