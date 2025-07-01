@@ -219,6 +219,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -260,9 +261,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -471,6 +476,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -512,9 +518,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -723,6 +733,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -764,9 +775,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -975,6 +990,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -1016,9 +1032,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -1227,6 +1247,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -1268,9 +1289,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -1479,6 +1504,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -1520,9 +1546,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -1731,6 +1761,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -1772,9 +1803,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -1983,6 +2018,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -2024,9 +2060,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -2235,6 +2275,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -2276,9 +2317,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -2487,6 +2532,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -2528,9 +2574,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -2739,6 +2789,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -2780,9 +2831,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -2991,6 +3046,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -3032,9 +3088,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -3243,6 +3303,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -3284,9 +3345,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -3495,6 +3560,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -3536,9 +3602,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -3747,6 +3817,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -3788,9 +3859,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -3999,6 +4074,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -4040,9 +4116,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -4251,6 +4331,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -4292,9 +4373,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -4503,6 +4588,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -4544,9 +4630,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -4755,6 +4845,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -4796,9 +4887,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -5007,6 +5102,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -5048,9 +5144,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -5259,6 +5359,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -5300,9 +5401,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -5511,6 +5616,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -5552,9 +5658,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -5763,6 +5873,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -5804,9 +5915,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -6015,6 +6130,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -6056,9 +6172,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -6267,6 +6387,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -6308,9 +6429,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -6519,6 +6644,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -6560,9 +6686,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -6771,6 +6901,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -6812,9 +6943,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -7023,6 +7158,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -7064,9 +7200,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -7275,6 +7415,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -7316,9 +7457,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -7527,6 +7672,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -7568,9 +7714,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -7779,6 +7929,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -7820,9 +7971,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -8031,6 +8186,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -8072,9 +8228,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -8283,6 +8443,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -8324,9 +8485,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -8535,6 +8700,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -8576,9 +8742,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -8787,6 +8957,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -8828,9 +8999,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -9039,6 +9214,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -9080,9 +9256,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -9291,6 +9471,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -9332,9 +9513,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -9543,6 +9728,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -9584,9 +9770,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -9795,6 +9985,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -9836,9 +10027,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -10047,6 +10242,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -10088,9 +10284,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -10299,6 +10499,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -10340,9 +10541,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -10551,6 +10756,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -10592,9 +10798,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -10803,6 +11013,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -10844,9 +11055,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -11055,6 +11270,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -11096,9 +11312,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -11307,6 +11527,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -11348,9 +11569,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -11559,6 +11784,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -11600,9 +11826,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -11811,6 +12041,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -11852,9 +12083,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -12063,6 +12298,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -12104,9 +12340,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -12315,6 +12555,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -12356,9 +12597,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -12567,6 +12812,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -12608,9 +12854,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -12819,6 +13069,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -12860,9 +13111,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -13071,6 +13326,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -13112,9 +13368,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -13323,6 +13583,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -13364,9 +13625,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -13575,6 +13840,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -13616,9 +13882,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -13827,6 +14097,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -13868,9 +14139,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -14079,6 +14354,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -14120,9 +14396,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -14331,6 +14611,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -14372,9 +14653,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -14583,6 +14868,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -14624,9 +14910,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -14835,6 +15125,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -14876,9 +15167,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -15087,6 +15382,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -15128,9 +15424,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -15339,6 +15639,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -15380,9 +15681,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -15591,6 +15896,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -15632,9 +15938,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -15843,6 +16153,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -15884,9 +16195,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -16095,6 +16410,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -16136,9 +16452,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -16347,6 +16667,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -16388,9 +16709,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -16599,6 +16924,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -16640,9 +16966,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -16851,6 +17181,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -16892,9 +17223,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -17103,6 +17438,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -17144,9 +17480,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -17355,6 +17695,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -17396,9 +17737,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -17607,6 +17952,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -17648,9 +17994,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -17859,6 +18209,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -17900,9 +18251,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -18111,6 +18466,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -18152,9 +18508,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -18363,6 +18723,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -18404,9 +18765,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -18615,6 +18980,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -18656,9 +19022,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -18867,6 +19237,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -18908,9 +19279,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -19119,6 +19494,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -19160,9 +19536,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -19371,6 +19751,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -19412,9 +19793,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -19623,6 +20008,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -19664,9 +20050,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -19875,6 +20265,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -19916,9 +20307,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -20127,6 +20522,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -20168,9 +20564,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -20379,6 +20779,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -20420,9 +20821,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -20631,6 +21036,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -20672,9 +21078,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -20883,6 +21293,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -20924,9 +21335,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -21135,6 +21550,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -21176,9 +21592,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -21387,6 +21807,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -21428,9 +21849,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -21639,6 +22064,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -21680,9 +22106,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -21891,6 +22321,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -21932,9 +22363,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -22143,6 +22578,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -22184,9 +22620,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -22395,6 +22835,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -22436,9 +22877,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -22647,6 +23092,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -22688,9 +23134,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -22899,6 +23349,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -22940,9 +23391,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -23151,6 +23606,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -23192,9 +23648,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -23403,6 +23863,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -23444,9 +23905,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -23655,6 +24120,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -23696,9 +24162,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -23907,6 +24377,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -23948,9 +24419,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -24159,6 +24634,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -24200,9 +24676,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -24411,6 +24891,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -24452,9 +24933,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -24663,6 +25148,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -24704,9 +25190,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -24915,6 +25405,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -24956,9 +25447,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -25167,6 +25662,7 @@ locals {
           for rule_idx, rule in group.rules :
           merge(rule, {
             contiguous_forward_count = concat([
+              // Do this as a greedy algorithm, starting from the last rule so we capture as much as possible in one go
               for forward_count in range(rule.contiguous_forward_count, 0, -1) :
               forward_count
               // To see if they can be merged,
@@ -25208,9 +25704,13 @@ locals {
           )
         }
         // Only include the rule if it's the first rule OR 
-        // the previous rule was not contiguous with this one.
+        // there are no previous rules that are contiguous to or past this rule.
         // This removes rules that got squashed into a previous one.
-        if rule_idx == 0 ? true : group.rules[rule_idx - 1].contiguous_forward_count == 0
+        if rule_idx == 0 ? true : length([
+          for previous_rule_idx in range(0, rule_idx):
+          null
+          if(previous_rule_idx + group.rules[previous_rule_idx].contiguous_forward_count) >= rule_idx
+        ]) == 0
       ]
     })
   }
@@ -25325,6 +25825,6 @@ locals {
   // in memory with most of them just being a replicate of the previous level.
   final_contiguous_squashed = {
     for group_key in keys(local.reverse_pass_encapsulate) :
-    group_key => local.squashed_sets[length(local.range_keys[group_key]) - 1][group_key]
+    group_key => length(local.range_keys[group_key]) == 0 ? local.reverse_pass_encapsulate[group_key] : local.squashed_sets[length(local.range_keys[group_key]) - 1][group_key]
   }
 }

@@ -1,7 +1,7 @@
 run "simple" {
   command = plan
   module {
-    source = "../"
+    source = "./"
   }
   variables {
     rule_sets = {
@@ -111,7 +111,7 @@ run "simple" {
 run "port_merge" {
   command = plan
   module {
-    source = "../"
+    source = "./"
   }
   variables {
     rule_sets = {
@@ -218,12 +218,109 @@ run "port_merge" {
   }
 }
 
+
+run "icmp_merge" {
+  command = plan
+  module {
+    source = "./"
+  }
+  variables {
+    rule_sets = {
+      set-0 = [
+        {
+          egress     = false
+          allow      = true
+          protocol   = "icmp"
+          cidr_block = "10.0.0.0/16"
+          icmp_type  = -1
+          icmp_code  = -1
+          metadata = {
+            id = 1
+          }
+        },
+        {
+          egress     = false
+          allow      = true
+          protocol   = "icmp"
+          cidr_block = "10.1.0.0/16"
+          icmp_type  = -1
+          icmp_code  = -1
+          metadata = {
+            id = 2
+          }
+        },
+        {
+          egress     = false
+          allow      = true
+          protocol   = 1
+          cidr_block = "10.2.0.0/16"
+          icmp_type  = -1
+          icmp_code  = -1
+          metadata = {
+            id = 3
+          }
+        },
+        {
+          egress     = false
+          allow      = true
+          protocol   = 1
+          cidr_block = "10.3.0.0/16"
+          icmp_type  = -1
+          icmp_code  = -1
+          metadata = {
+            id = 4
+          }
+        },
+      ]
+    }
+  }
+  assert {
+    // We have to compare with jsonencode, because there is some odd typing issues
+    // that cause a direct object comparison to fail with "different types"
+    condition = jsonencode(output.squashed_rule_sets) == jsonencode({
+      set-0 = [
+        {
+          egress     = false
+          allow      = true
+          protocol   = 1
+          cidr_block = "10.0.0.0/14"
+          from_port  = null
+          to_port    = null
+          icmp_code  = -1
+          icmp_type  = -1
+          contains_rules = [
+            0,
+            1,
+            2,
+            3,
+          ]
+          metadata = [
+            {
+              id = 1
+            },
+            {
+              id = 2
+            },
+            {
+              id = 3
+            },
+            {
+              id = 4
+            }
+          ]
+        },
+      ]
+    })
+    error_message = "Unexpected output: ${jsonencode(output.squashed_rule_sets)}"
+  }
+}
+
 ###############################################################################
 # 1. Protocol name ⇒ number normalisation & duplicate collapse
 ###############################################################################
 run "protocol_normalisation" {
   command = plan
-  module { source = "../" }
+  module { source = "./" }
   variables {
     rule_sets = {
       set-0 = [
@@ -275,7 +372,7 @@ run "protocol_normalisation" {
 ###############################################################################
 run "protocol_mismatch" {
   command = plan
-  module { source = "../" }
+  module { source = "./" }
   variables {
     rule_sets = {
       set-0 = [
@@ -339,7 +436,7 @@ run "protocol_mismatch" {
 ###############################################################################
 run "cidr_contiguous_merge" {
   command = plan
-  module { source = "../" }
+  module { source = "./" }
   variables {
     rule_sets = {
       set-0 = [
@@ -391,7 +488,7 @@ run "cidr_contiguous_merge" {
 ###############################################################################
 run "cidr_gap_no_merge" {
   command = plan
-  module { source = "../" }
+  module { source = "./" }
   variables {
     rule_sets = {
       set-0 = [
@@ -455,7 +552,7 @@ run "cidr_gap_no_merge" {
 ###############################################################################
 run "port_adjacent_merge" {
   command = plan
-  module { source = "../" }
+  module { source = "./" }
   variables {
     rule_sets = {
       set-0 = [
@@ -507,7 +604,7 @@ run "port_adjacent_merge" {
 ###############################################################################
 run "port_gap_no_merge" {
   command = plan
-  module { source = "../" }
+  module { source = "./" }
   variables {
     rule_sets = {
       set-0 = [
@@ -571,7 +668,7 @@ run "port_gap_no_merge" {
 ###############################################################################
 run "egress_partition" {
   command = plan
-  module { source = "../" }
+  module { source = "./" }
   variables {
     rule_sets = {
       set-0 = [
@@ -635,7 +732,7 @@ run "egress_partition" {
 ###############################################################################
 run "allow_vs_deny" {
   command = plan
-  module { source = "../" }
+  module { source = "./" }
   variables {
     rule_sets = {
       set-0 = [
@@ -699,7 +796,7 @@ run "allow_vs_deny" {
 ###############################################################################
 run "icmp_type_code" {
   command = plan
-  module { source = "../" }
+  module { source = "./" }
   variables {
     rule_sets = {
       set-0 = [

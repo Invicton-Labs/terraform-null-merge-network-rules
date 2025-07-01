@@ -102,18 +102,62 @@ module "merge_rules" {
     # }
 
     set-1 = {
-      discrete_encapsulation = {}
-      discrete_equivalents   = {}
-      base2_align_ranges = [
+      discrete_encapsulation = {
+        egress   = []
+        allow    = []
+        protocol = []
+        icmp_type = [
+          {
+            primary      = -1
+            encapsulated = null
+          }
+        ]
+        icmp_code = [
+          {
+            primary      = -1
+            encapsulated = null
+          }
+        ]
+      }
+      discrete_equivalents = {
+        egress = []
+        allow  = []
+        protocol = [
+          {
+            primary      = 1
+            alternatives = ["icmp"]
+          }
+        ]
+        icmp_type = [
+          {
+            primary      = -1
+            alternatives = ["all"]
+          }
+        ]
+        icmp_code = [
+          {
+            primary      = -1
+            alternatives = ["all"]
+          }
+        ]
+      }
+      base2_align_range_keys = [
         "ipv4"
       ]
       rules = [
         {
           ranges = {
             ipv4 = {
-              from_inclusive = 167837696
-              to_inclusive   = 167903231
+              from_inclusive = 0
+              to_inclusive   = 4294967295
             }
+          }
+          discretes = {
+            egress    = false
+            allow     = true
+            protocol  = "icmp"
+            icmp_type = null
+            icmp_code = null
           }
           metadata = {
             id = 1
@@ -122,23 +166,23 @@ module "merge_rules" {
         {
           ranges = {
             ipv4 = {
-              from_inclusive = 167903232
-              to_inclusive   = 167968767
+              from_inclusive = 0
+              to_inclusive   = 4294967295
             }
+            test = {
+              from_inclusive = 1
+              to_inclusive = 2
+            }
+          }
+          discretes = {
+            egress    = false
+            allow     = true
+            protocol  = "1"
+            icmp_type = 8
+            icmp_code = 0
           }
           metadata = {
             id = 2
-          }
-        },
-        {
-          ranges = {
-            ipv4 = {
-              from_inclusive = 167968768
-              to_inclusive   = 168034303
-            }
-          }
-          metadata = {
-            id = 3
           }
         },
       ]

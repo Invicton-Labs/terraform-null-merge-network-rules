@@ -3,26 +3,11 @@ locals {
   // Discrete encapsulations and equivalencies are found here:
   // https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkAclEntry.html
   discrete_encapsulation = {
-    protocol = [
-      {
-        primary      = -1
-        encapsulated = null
-      }
-    ]
-    icmp_type = [
-      {
-        primary      = -1
-        encapsulated = null
-      }
-    ]
-    icmp_code = [
-      {
-        primary      = -1
-        encapsulated = null
-      }
-    ]
-    egress = []
-    allow  = []
+    protocol  = local.protocol_encapsulations
+    icmp_type = local.icmp_type_encapsulations
+    icmp_code = local.icmp_code_encapsulations
+    egress    = []
+    allow     = []
   }
 
   discrete_equivalents = {

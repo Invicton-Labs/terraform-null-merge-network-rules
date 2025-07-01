@@ -7,7 +7,7 @@ variable "rule_sets" {
     cidr_block = string
     from_port  = optional(number, null)
     to_port    = optional(number, null)
-    icmp_type  = optional(string, null)
+    icmp_type  = optional(number, null)
     icmp_code  = optional(number, null)
     metadata   = optional(any, null)
   })))
@@ -118,6 +118,26 @@ variable "rule_sets" {
         for idx, rule in group :
         "\t- Set \"${group_key}\", rule at index ${idx} (value: \"${rule.cidr_block == null ? "null" : rule.cidr_block}\")"
         if rule.cidr_block == null ? true : !can(cidrhost(rule.cidr_block, 0))
+      ]
+    ]))}"
+  }
+
+  // Verify that all protocols are valid strings (if they're strings)
+  validation {
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets :
+      [
+        for rule in group :
+        null
+        if rule.protocol == null ? false : can(tonumber(rule.protocol)) ? false : !contains(local.all_protocol_strings, upper(rule.protocol))
+      ]
+    ]))
+    error_message = "For each rule, the `protocol` value must be either a number or a valid protocol string name. The input does not meet this requirement:\n${join("\n", flatten([
+      for group_key, group in var.rule_sets :
+      [
+        for idx, rule in group :
+        "\t- Set \"${group_key}\", rule at index ${idx} (value: \"${rule.protocol == null ? "null" : rule.protocol}\")"
+        if rule.protocol == null ? false : can(tonumber(rule.protocol)) ? false : !contains(local.all_protocol_strings, upper(rule.protocol))
       ]
     ]))}"
   }

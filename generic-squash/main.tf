@@ -5,22 +5,13 @@
 locals {
   // Get a list of all discrete and range keys found within each rule set.
   // We use this to standardize the rules for merging.
-  all_discrete_and_range_keys = {
+  // Get the complete set of range keys we're dealing with for each rule list.
+  range_keys = {
     for group_key, group in var.rule_sets :
-    group_key => {
-      discrete = distinct(flatten(
-        [
-          for rule in group.rules :
-          keys(rule.discretes)
-        ]
-      ))
-      range = distinct(flatten(
-        [
-          for rule in group.rules :
-          keys(rule.ranges)
-        ]
-      ))
-    }
+    group_key => distinct(flatten([
+      for rule in group.rules :
+      keys(rule.ranges)
+    ]))
   }
 
   // This adds any missing discrete and range keys to any rule that doesn't have them,
@@ -31,17 +22,34 @@ locals {
       rules = [
         for rule_idx, rule in group.rules :
         merge(rule, {
-          discretes = merge(rule.discretes, {
-            for k in setsubtract(local.all_discrete_and_range_keys[group_key].discrete, keys(rule.discretes)) :
-            k => null
-          })
+          // Add any range keys that are missing, with ranges that are equivalent
+          // to not existing (no restriction).
           ranges = merge(rule.ranges, {
-            for k in setsubtract(local.all_discrete_and_range_keys[group_key].range, keys(rule.ranges)) :
+            for k in setsubtract(local.range_keys[group_key], keys(rule.ranges)) :
             k => {
               from_inclusive = null
               to_inclusive   = null
             }
           })
+          // Replace any discrete values with their primary equivalency
+          discretes = {
+            for dk, dv in rule.discretes :
+            // Create a list of all equivalent values, and
+            // add the current value at the end, then take the first index.
+            // This will ensure that if there's an equivalency, it gets used, but
+            // if not then the current value is used.
+            dk => concat([
+              for de_pair in group.discrete_equivalents[dk] :
+              de_pair.primary
+              // This is an alternative to the "contains" function, except that
+              // it works to find "null", which the "contains" function can't do.
+              if length([
+                for alternative in de_pair.alternatives :
+                null
+                if alternative == dv
+              ]) > 0
+            ], [dv])[0]
+          }
           metadata = {
             original = rule.metadata
             temp = {
@@ -75,43 +83,9 @@ locals {
     }
   }
 
-  // Do a first pass to clean up equivalencies and ranges that are meaningless
-  equivalencies = {
-    for group_key, group in local.standardized_rule_sets :
-    group_key => merge(group, {
-      rules = {
-        for rule_idx, rule in group.rules :
-        rule_idx => merge(rule, {
-          // Replace any discrete values with their primary equivalency
-          discretes = {
-            for dk, dv in rule.discretes :
-            // Create a list of all equivalent values, and
-            // add the current value at the end, then take the first index.
-            // This will ensure that if there's an equivalency, it gets used, but
-            // if not then the current value is used.
-            dk => concat([
-              for de_pair in group.discrete_equivalents[dk] :
-              de_pair.primary
-              if contains(de_pair.alternatives, dv)
-            ], [dv])[0]
-          }
-          // Remove any ranges where both values are null, as that makes it an
-          // infinite range and thereby not a range limit at all.
-          // TODO: delete?
-          # ranges = {
-          #   for rk, rv in rule.ranges :
-          #   rk => rv
-          #   // Only include the range if at least one of the bounds is non-null
-          #   if rv.to_inclusive != null ? true : rv.from_inclusive != null
-          # }
-        })
-      }
-    })
-  }
-
   // This adds to each rule a listing of all of the rules it encapuslates (rules that can be merged into it)
   with_encapsulations = {
-    for group_key, group in local.equivalencies :
+    for group_key, group in local.standardized_rule_sets :
     group_key => merge(group, {
       rules = {
         for encapsulator_idx, encapsulator in group.rules :
@@ -153,23 +127,26 @@ locals {
                 // Check if there are any discrete rules that are violated
                 length(
                   [
-                    for discrete_key, encapsulator_discrete_value in encapsulator.discretes :
+                    // Since the variable validation rules require all rules to have the same discrete keys,
+                    // we only have to loop through the keys in the encapsulator, as those keys are guaranteed
+                    // to be present in the encapsulated.
+                    for discrete_key in keys(encapsulator.discretes) :
                     true
-                    // If the value is equal, it matches so that's fine
-                    // If it's not equal, we have to check if this rule's value encapsulates the encapsulated rule's discrete value
                     if(
-                      // If the encapsulated value doesn't have the key, it can't be encapsulated, that's a violation
-                      !contains(keys(encapsulated.discretes), discrete_key) ? true : (
-                        // It does have the key
-                        // If the key is equal, that's fine, no violation
-                        encapsulator_discrete_value == encapsulated.discretes[discrete_key] ? false : (
-                          // Otherwise, check if the value of the encapsulator encapsulates the value of the encapsulated
-                          // If the encapsulator's value is null, that means it encapsulates everything, so that's fine
+                      // If the key is equal, that's fine, no violation
+                      encapsulator.discretes[discrete_key] == encapsulated.discretes[discrete_key] ? false : (
+                        // Otherwise, check if the value of the encapsulator encapsulates the value of the encapsulated
 
-                          // See if the the encapsulator's discrete values covers all (null) other rvalues
-                          try(local.discrete_encapsulation_encapsulated_values[index(local.discrete_encapsulation_primaries[group_key][discrete_key], encapsulator.discretes[discrete_key])], []) == null ? false : (
-                            !contains(try(local.discrete_encapsulation_encapsulated_values[index(local.discrete_encapsulation_primaries[group_key][discrete_key], encapsulator.discretes[discrete_key])], []), encapsulated.discretes[discrete_key])
-                          )
+                        // See if the the encapsulator's discrete value is in the discrete_encapsulation values and covers all (null) other values
+                        try(local.discrete_encapsulation_encapsulated_values[index(local.discrete_encapsulation_primaries[group_key][discrete_key], encapsulator.discretes[discrete_key])], []) == null ? false : (
+                          // It doesn't so now try if it covers this specific discrete value in the encapsulated rule
+                          // This is an alternative to the "contains" function, except that
+                          // it works to find "null", which the "contains" function can't do.
+                          length([
+                            for check_value in try(local.discrete_encapsulation_encapsulated_values[index(local.discrete_encapsulation_primaries[group_key][discrete_key], encapsulator.discretes[discrete_key])], []) :
+                            null
+                            if check_value == encapsulated.discretes[discrete_key]
+                          ]) == 0
                         )
                       )
                     )
@@ -182,7 +159,6 @@ locals {
       }
     })
   }
-
 
   // Do a forward pass to remove any rules that are encapsulated in a later rule.
   // We do this in two steps (forward, then reverse) so two equal rules don't
@@ -238,15 +214,6 @@ locals {
         ])
       ]
     })
-  }
-
-  // Get the complete set of range keys we're dealing with for each rule list.
-  range_keys = {
-    for group_key, group in local.reverse_pass_encapsulate :
-    group_key => distinct(flatten([
-      for rule in group.rules :
-      keys(rule.ranges)
-    ]))
   }
 
   // Get the complete set of discrete keys we're dealing with for each rule list.

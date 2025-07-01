@@ -57,16 +57,6 @@ EOF
     )
   )
 
-  // TODO:
-  // - discretes object must be a map
-  // - discretes can only be bools, strings, numbers, or null
-  // - Check for loops in the discrete encapsulation?
-  // - Useful output for each validation
-  // - ensure there are no base2_align rules that don't appear in the ranges
-  // - verify that all starting and ending ranges that are base2 are aligned
-  // - ensure there are no more ranges than are supported
-
-
   // Ensure that no discrete equivalent type keys are in the associated values for the same discrete type
   validation {
     condition = 0 == length(flatten([
@@ -78,7 +68,7 @@ EOF
         if length(setintersection([for pair in dev : pair.primary], flatten([for pair in dev : pair.alternatives]))) > 0
       ]
     ]))
-    error_message = "For each set, none of the `primary` values for any `discrete_equivalents` key may be present in the `alternatives` values for that same key. The input does not meet this requirement:\n${join(", ", flatten([
+    error_message = "For each set, none of the `primary` values for any `discrete_equivalents` key may be present in the `alternatives` values for that same key. The input does not meet this requirement:\n${join("\n", flatten([
       for group_key, group in var.rule_sets :
       [
         for dek, dev in group.discrete_equivalents :
@@ -100,7 +90,7 @@ EOF
         if length(distinct(flatten([for pair in dev : pair.alternatives]))) != length(flatten([for pair in dev : pair.alternatives]))
       ]
     ]))
-    error_message = "For each set, each `alternatives` value for each `discrete_equivalents` key must only appear in one `alternatives` value, and must not have any duplicates. The input does not meet this requirement:\n${join(", ", flatten([
+    error_message = "For each set, each `alternatives` value for each `discrete_equivalents` key must only appear in one `alternatives` value, and must not have any duplicates. The input does not meet this requirement:\n${join("\n", flatten([
       for group_key, group in var.rule_sets :
       [
         for dek, dev in group.discrete_equivalents :
@@ -115,197 +105,547 @@ EOF
     ]))}"
   }
 
-  // TODO: continue from here down, ensuring all validation rules have a consistent format
-
   // Ensure that the discrete encapsulation values are all valid
   validation {
-    condition = length([
+    condition = length(flatten([
       // Check each set
       for key, group in var.rule_sets :
-      key
-      if length([
+      [
         // Check each discrete encapsulation type
-        for discrete_name, discrete_encapsulations in group.discrete_encapsulation :
-        true
-        if length([
+        for discrete_key, discrete_encapsulations in group.discrete_encapsulation :
+        [
           // Check each encapsulation
           for discrete_encapsulation in discrete_encapsulations :
-          true
           // If it's null, that's fine because it means it encapsulates everything
-          if discrete_encapsulation == null ? false : length([
-            for encapsulation in discrete_encapsulation :
-            true
-            if can(keys(encapsulation)) || can(anytrue(encapsulation))
-          ]) > 0
-        ]) > 0
-      ]) > 0
-    ]) == 0
-    error_message = "For each discrete encapsulation, the value must be a string, number, or boolean."
+          discrete_encapsulation.encapsulated == null ? [] : [
+            for encapsulated_value in discrete_encapsulation.encapsulated :
+            null
+            // It can't be a map, object, or list.
+            if can(keys(encapsulated_value)) || can(anytrue(encapsulated_value))
+          ]
+        ]
+      ]
+    ])) == 0
+    error_message = "For each set, each value in the \"encapsulated\" sub-field of the \"discrete_encapsulation\" field must be a bool, string, number, or null. The input does not meet this requirement:\n${join("\n", flatten([
+      // Check each set
+      for group_key, group in var.rule_sets :
+      [
+        // Check each discrete encapsulation type
+        for discrete_key, discrete_encapsulations in group.discrete_encapsulation :
+        [
+          // Check each encapsulation
+          for discrete_encapsulation in discrete_encapsulations :
+          // If it's null, that's fine because it means it encapsulates everything
+          discrete_encapsulation.encapsulated == null ? [] : [
+            for ev_idx, encapsulated_value in discrete_encapsulation.encapsulated :
+            "\t- Set \"${group_key}\", discrete key \"${discrete_key}\", primary \"${discrete_encapsulation.primary}\", encapsulated value at index ${ev_idx} (value type: ${encapsulated_value == null ? "null" : can(length(encapsulated_value)) ? (
+              // It's either a map, object, list, set, or string
+              can(keys(encapsulated_value)) ? (
+                // It has keys, so it's either a map or object
+                can(tomap(encapsulated_value)) ? "map" : "object"
+                ) : (
+                // It doen't have keys, so it's a list, set, or string
+                can(flatten(encapsulated_value)) ? (
+                  // It can be flattened, so it's a list or set
+                  can(coalescelist(encapsulated_value, [null])) ? "list" : "set"
+                ) : "string"
+              )
+              ) : (
+              // It's either a number or a bool
+              can(tobool(encapsulated_value)) ? "bool" : "number"
+            )})"
+            // It can't be a map, object, or list.
+            if can(keys(encapsulated_value)) || can(anytrue(encapsulated_value))
+          ]
+        ]
+      ]
+    ]))}"
   }
 
   // Ensure that the discrete equivalents values are all valid
   validation {
-    condition = length([
+    condition = length(flatten([
       // Check each set
       for key, group in var.rule_sets :
-      key
-      if length([
-        // Check each discrete encapsulation type
-        for discrete_name, discrete_equivalents in group.discrete_equivalents :
-        true
-        if length([
-          // Check each encapsulation
+      [
+        // Check each discrete equivalent type
+        for discrete_key, discrete_equivalents in group.discrete_equivalents :
+        [
+          // Check each equivalent
           for discrete_equivalent in discrete_equivalents :
-          true
-          if length([
-            for equivalent in discrete_equivalent :
-            true
-            if can(keys(equivalent)) || can(anytrue(equivalent))
-          ]) > 0
-        ]) > 0
-      ]) > 0
-    ]) == 0
-    error_message = "For each discrete equivalent, the value must be a string, number, or boolean."
-  }
-
-  // Ensure that the discrete values are all valid
-  validation {
-    condition = length([
+          [
+            for alternative_value in discrete_equivalent.alternatives :
+            null
+            // It can't be a map, object, or list.
+            if can(keys(alternative_value)) || can(anytrue(alternative_value))
+          ]
+        ]
+      ]
+    ])) == 0
+    error_message = "For each set, each value in the \"alternatives\" sub-field of the \"discrete_equivalents\" field must be a bool, string, number, or null. The input does not meet this requirement:\n${join("\n", flatten([
       // Check each set
-      for key, group in var.rule_sets :
-      key
-      if length([
-        // Check each rule
-        for rule in group.rules :
-        true
-        if length([
-          // Check each discrete in the rule
-          for sk, sv in rule.discretes :
-          true
-          if can(keys(sv)) || can(tolist(sv))
-        ]) > 0
-      ]) > 0
-    ]) == 0
-    error_message = "For each discrete, the value must be a string, number, or boolean."
+      for group_key, group in var.rule_sets :
+      [
+        // Check each discrete equivalent type
+        for discrete_key, discrete_equivalents in group.discrete_equivalents :
+        [
+          // Check each equivalent
+          for discrete_equivalent in discrete_equivalents :
+          [
+            for ev_idx, alternative_value in discrete_equivalent.alternatives :
+            "\t- Set \"${group_key}\", discrete key \"${discrete_key}\", primary \"${discrete_equivalent.primary}\", encapsulated value at index ${ev_idx} (value type: ${alternative_value == null ? "null" : can(length(alternative_value)) ? (
+              // It's either a map, object, list, set, or string
+              can(keys(alternative_value)) ? (
+                // It has keys, so it's either a map or object
+                can(tomap(alternative_value)) ? "map" : "object"
+                ) : (
+                // It doen't have keys, so it's a list, set, or string
+                can(flatten(alternative_value)) ? (
+                  // It can be flattened, so it's a list or set
+                  can(coalescelist(alternative_value, [null])) ? "list" : "set"
+                ) : "string"
+              )
+              ) : (
+              // It's either a number or a bool
+              can(tobool(alternative_value)) ? "bool" : "number"
+            )})"
+            // It can't be a map, object, or list.
+            if can(keys(alternative_value)) || can(anytrue(alternative_value))
+          ]
+        ]
+      ]
+    ]))}"
   }
 
   // Ensure that every discrete key is in the discrete_encapsulation keys
   validation {
     condition = length([
       // Check each set
-      for key, group in var.rule_sets :
-      key
-      if length([
-        // Check each rule
+      for group_key, group in var.rule_sets :
+      null
+      if length(setsubtract(distinct(flatten([
         for rule in group.rules :
-        true
-        if length([
-          // Check each discrete in the rule
-          for sk, sv in rule.discretes :
-          true
-          if !contains(keys(group.discrete_encapsulation), sk)
-        ]) > 0
-      ]) > 0
+        keys(rule.discretes)
+      ])), keys(group.discrete_encapsulation))) > 0
     ]) == 0
-    error_message = "For a given set, the key of every discrete must be in the `discrete_encapsulation` map. This is to help ensure there are no accidental key typos."
+    error_message = "For each set, the \"discrete_encapsulation\" field must have an entry for each discrete key found in any of the rules in that set. The input does not meet this requirement:\n${join("\n", [
+      // Check each set
+      for group_key, group in var.rule_sets :
+      "\t- Set \"${group_key}\" (missing \"discrete_encapsulation\" entries for discrete keys: ${join(", ",
+        [
+          for dk in sort(setsubtract(distinct(flatten([
+            for rule in group.rules :
+            keys(rule.discretes)
+          ])), keys(group.discrete_encapsulation))) :
+          "\"${dk}\""
+        ]
+      )})"
+      if length(setsubtract(distinct(flatten([
+        for rule in group.rules :
+        keys(rule.discretes)
+      ])), keys(group.discrete_encapsulation))) > 0
+    ])}"
   }
 
   // Ensure that every discrete key is in the discrete_equivalents keys
   validation {
     condition = length([
       // Check each set
-      for key, group in var.rule_sets :
-      key
-      if length([
-        // Check each rule
+      for group_key, group in var.rule_sets :
+      null
+      if length(setsubtract(distinct(flatten([
         for rule in group.rules :
-        true
-        if length([
-          // Check each discrete in the rule
-          for sk, sv in rule.discretes :
-          true
-          if !contains(keys(group.discrete_equivalents), sk)
-        ]) > 0
-      ]) > 0
+        keys(rule.discretes)
+      ])), keys(group.discrete_equivalents))) > 0
     ]) == 0
-    error_message = "For a given set, the key of every discrete must be in the `discrete_equivalents` map. This is to help ensure there are no accidental key typos."
-  }
-
-  // Ensure that all items have the same range keys
-  validation {
-    condition = length([
+    error_message = "For each set, the \"discrete_equivalents\" field must have an entry for each discrete key found in any of the rules in that set. The input does not meet this requirement:\n${join("\n", [
       // Check each set
-      for key, group in var.rule_sets :
-      key
-      if length(group.rules) == 0 ? false : length([
-        // Check each rule other than the first one
-        for idx in range(1, length(group.rules)) :
-        true
-        // It's a problem if they have different numbers of keys, or if the length of the intersection doesn't match both of their lengths
-        if length(setsubtract(keys(group.rules[idx].ranges), keys(group.rules[0].ranges))) != 0 ? length(setsubtract(keys(group.rules[0].ranges), keys(group.rules[idx].ranges))) != 0 : false
-      ]) > 0
-    ]) == 0
-    error_message = "For all rules in a given set, the keys in the `ranges` field of each rule must be consistent. The following set(s) do not meet this requirement: ${join(", ", [
-      for key, group in var.rule_sets :
-      key
-      if length(group.rules) == 0 ? false : length([
-        for idx in range(1, length(group.rules)) :
-        true
-        // It's a problem if they have different numbers of keys, or if the length of the intersection doesn't match both of their lengths
-        if length(setsubtract(keys(group.rules[idx].ranges), keys(group.rules[0].ranges))) != 0 ? length(setsubtract(keys(group.rules[0].ranges), keys(group.rules[idx].ranges))) != 0 : false
-      ]) > 0
+      for group_key, group in var.rule_sets :
+      "\t- Set \"${group_key}\" (missing \"discrete_equivalents\" entries for discrete keys: ${join(", ",
+        [
+          for dk in sort(setsubtract(distinct(flatten([
+            for rule in group.rules :
+            keys(rule.discretes)
+          ])), keys(group.discrete_equivalents))) :
+          "\"${dk}\""
+        ]
+      )})"
+      if length(setsubtract(distinct(flatten([
+        for rule in group.rules :
+        keys(rule.discretes)
+      ])), keys(group.discrete_equivalents))) > 0
     ])}"
   }
 
   // Ensure that for each range, the "to" must be greater than or equal to the "from"
   validation {
-    condition = 0 == length([
-      // Check each set
-      for key, group in var.rule_sets :
-      key
-      if length(flatten([
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets :
+      [
         for rule in group.rules :
         [
-          for range_key, range_value in rule.ranges :
-          true
+          for rk, rv in rule.ranges :
+          null
           if(
             // If one is null, that's fine
-            range_value.from_inclusive == null ? false : (
-              range_value.to_inclusive == null ? false : (
+            rv.from_inclusive == null ? false : (
+              rv.to_inclusive == null ? false : (
                 // They're both non-null, so if the to value is below the from value, that's a violation
-                range_value.to_inclusive < range_value.from_inclusive
+                rv.to_inclusive < rv.from_inclusive
               )
             )
           )
         ]
-      ])) > 0
+      ]
+    ]))
+    error_message = "For each range in each rule, if neither the \"from_inclusive\" nor \"to_inclusive\" value is \"null\", then the \"to_inclusive\" must be greater than or equal to the \"from_inclusive\" value. The input does not meet this requirement:\n${
+      join("\n", flatten([
+        for group_key, group in var.rule_sets :
+        [
+          for rule_idx, rule in group.rules :
+          [
+            for rk, rv in rule.ranges :
+            "\t- Set \"${group_key}\", rule at index ${rule_idx}, range key \"${rk}\""
+            if(
+              // If one is null, that's fine
+              rv.from_inclusive == null ? false : (
+                rv.to_inclusive == null ? false : (
+                  // They're both non-null, so if the to value is below the from value, that's a violation
+                  rv.to_inclusive < rv.from_inclusive
+                )
+              )
+            )
+          ]
+        ]
+      ]))
+    }"
+  }
+
+  // Ensure that the "discretes" field is a map or object
+  validation {
+    condition = 0 == length([
+      for group_key, group in var.rule_sets :
+      null
+      if length([
+        for rule in group.rules :
+        null
+        // It's a problem if the discretes field isn't a map or object
+        if !can(keys(rule.discretes))
+      ]) > 0
     ])
-    error_message = "For all ranges, either one (or both) of the `from_inclusive` and `to_inclusive` values must be null, or the `to_inclusive` value must be greater than or equal to the `from_inclusive` value."
+    error_message = "For all rules in a given set, the `discretes` field must be a map/object. The input does not meet this requirement:\n${
+      join("\n", flatten([
+        for group_key, group in var.rule_sets :
+        [
+          for rule in group.rules :
+          "\t- Set \"${group_key}\" (type: ${
+            rule.discretes == null ? "null" : can(length(rule.discretes)) ? (
+              // It's either a map, object, list, set, or string
+              can(keys(rule.discretes)) ? (
+                // It has keys, so it's either a map or object
+                can(tomap(rule.discretes)) ? "map" : "object"
+                ) : (
+                // It doen't have keys, so it's a list, set, or string
+                can(flatten(rule.discretes)) ? (
+                  // It can be flattened, so it's a list or set
+                  can(coalescelist(rule.discretes, [null])) ? "list" : "set"
+                ) : "string"
+              )
+              ) : (
+              // It's either a number or a bool
+              can(tobool(rule.discretes)) ? "bool" : "number"
+            )
+          })"
+        ]
+      ]))
+    }"
+  }
+
+  // Ensure that each discrete value is a bool, string, number, or null
+  validation {
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets :
+      [
+        for rule in group.rules :
+        [
+          for dk, dv in rule.discretes :
+          null
+          if !contains(["bool", "string", "number", "null"], dv == null ? "null" : can(length(dv)) ? (
+            // It's either a map, object, list, set, or string
+            can(keys(dv)) ? (
+              // It has keys, so it's either a map or object
+              can(tomap(dv)) ? "map" : "object"
+              ) : (
+              // It doen't have keys, so it's a list, set, or string
+              can(flatten(dv)) ? (
+                // It can be flattened, so it's a list or set
+                can(coalescelist(dv, [null])) ? "list" : "set"
+              ) : "string"
+            )
+            ) : (
+            // It's either a number or a bool
+            can(tobool(dv)) ? "bool" : "number"
+          ))
+        ]
+      ]
+    ]))
+    error_message = "For all rules in a given set, all values of all key/value pairs in the `discretes` field must be a bool, string, number, or null. The input does not meet this requirement:\n${
+      join("\n", flatten([
+        for group_key, group in var.rule_sets :
+        [
+          for rule_idx, rule in group.rules :
+          [
+            for dk, dv in rule.discretes :
+            "\t- Set \"${group_key}\", rule at index ${rule_idx}, discrete key \"${dk}\" (type: ${
+              dv == null ? "null" : can(length(dv)) ? (
+                // It's either a map, object, list, set, or string
+                can(keys(dv)) ? (
+                  // It has keys, so it's either a map or object
+                  can(tomap(dv)) ? "map" : "object"
+                  ) : (
+                  // It doen't have keys, so it's a list, set, or string
+                  can(flatten(dv)) ? (
+                    // It can be flattened, so it's a list or set
+                    can(coalescelist(dv, [null])) ? "list" : "set"
+                  ) : "string"
+                )
+                ) : (
+                // It's either a number or a bool
+                can(tobool(dv)) ? "bool" : "number"
+            )})"
+            if !contains(["bool", "string", "number", "null"], dv == null ? "null" : can(length(dv)) ? (
+              // It's either a map, object, list, set, or string
+              can(keys(dv)) ? (
+                // It has keys, so it's either a map or object
+                can(tomap(dv)) ? "map" : "object"
+                ) : (
+                // It doen't have keys, so it's a list, set, or string
+                can(flatten(dv)) ? (
+                  // It can be flattened, so it's a list or set
+                  can(coalescelist(dv, [null])) ? "list" : "set"
+                ) : "string"
+              )
+              ) : (
+              // It's either a number or a bool
+              can(tobool(dv)) ? "bool" : "number"
+              )
+            )
+          ]
+        ]
+      ]))
+    }"
   }
 
   // Ensure that all items have the same discrete keys
   validation {
-    condition = length([
-      for key, group in var.rule_sets :
-      key
+    condition = 0 == length([
+      for group_key, group in var.rule_sets :
+      null
       if length(group.rules) == 0 ? false : length([
         for idx in range(1, length(group.rules)) :
-        true
-        // It's a problem if they have different numbers of keys, or if the length of the intersection doesn't match both of their lengths
-        if length(setsubtract(keys(group.rules[idx].discretes), keys(group.rules[0].discretes))) != 0 ? length(setsubtract(keys(group.rules[0].discretes), keys(group.rules[idx].discretes))) != 0 : false
+        null
+        // It's a problem if the keys don't match
+        if sort(keys(group.rules[idx].discretes)) != sort(keys(group.rules[0].discretes))
       ]) > 0
-    ]) == 0
-    error_message = "For all rules in a given set, the keys in the `discretes` field of each rule must be consistent. The following set(s) do not meet this requirement: ${join(", ", [
-      for key, group in var.rule_sets :
-      key
-      if length(group.rules) == 0 ? false : length([
-        for idx in range(1, length(group.rules)) :
-        true
-        // It's a problem if they have different numbers of keys, or if the length of the intersection doesn't match both of their lengths
-        if length(setsubtract(keys(group.rules[idx].discretes), keys(group.rules[0].discretes))) != 0 ? length(setsubtract(keys(group.rules[0].discretes), keys(group.rules[idx].discretes))) != 0 : false
-      ]) > 0
-    ])}"
+    ])
+    error_message = "For all rules in a given set, the keys in the `discretes` field of each rule must be consistent. The input does not meet this requirement:\n${
+      join("\n", [
+        for group_key, group in var.rule_sets :
+        "\t- Set \"${group_key}\" (some, but not all, rules have these discrete keys: ${
+          join(", ", [
+            for discrete_key in sort(
+              setsubtract(
+                distinct(
+                  flatten([
+                    for rule in group.rules :
+                    keys(rule.discretes)
+                  ])
+                ),
+                setintersection(concat([[]], [
+                  for rule in group.rules :
+                  keys(rule.discretes)
+                ])...)
+              )
+            ) :
+            "\"${discrete_key}\""
+            ]
+          )
+        })"
+        if length(setsubtract(
+          distinct(
+            flatten([
+              for rule in group.rules :
+              keys(rule.discretes)
+            ])
+          ),
+          setintersection(concat([[]], [
+            for rule in group.rules :
+            keys(rule.discretes)
+          ])...)
+        )) > 0
+      ])
+    }"
   }
 
-  // TODO: ensure there are no cycles in the discrete encapsulations
+  // Ensure that for all base2-aligned ranges, the size is a power of 2
+  validation {
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets :
+      [
+        for rule in group.rules :
+        [
+          for rk, rv in rule.ranges :
+          null
+          if !contains(group.base2_align_range_keys, rk) ? false : (
+            pow(2, floor(log(rv.to_inclusive - rv.from_inclusive + 1, 2))) != rv.to_inclusive - rv.from_inclusive + 1
+          )
+        ]
+      ]
+    ]))
+    error_message = "For each rule, all base2-aligned ranges must have a range size that is a power of 2. The input does not meet this requirement:\n${
+      join("\n", flatten([
+        for group_key, group in var.rule_sets :
+        [
+          for rule_idx, rule in group.rules :
+          [
+            for rk, rv in rule.ranges :
+            "\t- Set \"${group_key}\", rule at index ${rule_idx}, range key \"${rk}\" (range size is ${rv.to_inclusive - rv.from_inclusive + 1}, log2 of this is ${log(rv.to_inclusive - rv.from_inclusive + 1, 2)}, which should be a whole number)"
+            if !contains(group.base2_align_range_keys, rk) ? false : (
+              pow(2, floor(log(rv.to_inclusive - rv.from_inclusive + 1, 2))) != rv.to_inclusive - rv.from_inclusive + 1
+            )
+          ]
+        ]
+      ]))
+    }"
+  }
+
+  // Ensure that for all base2-aligned ranges, the from_inclusive value is aligned to the range size.
+  validation {
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets :
+      [
+        for rule in group.rules :
+        [
+          for rk, rv in rule.ranges :
+          null
+          if !contains(group.base2_align_range_keys, rk) ? false : (
+            rv.from_inclusive % (rv.to_inclusive - rv.from_inclusive + 1) != 0
+          )
+        ]
+      ]
+    ]))
+    error_message = "For each rule, all base2-aligned ranges must have a \"from_inclusive\" value that is aligned according to the size of the range. The input does not meet this requirement:\n${
+      join("\n", flatten([
+        for group_key, group in var.rule_sets :
+        [
+          for rule_idx, rule in group.rules :
+          [
+            for rk, rv in rule.ranges :
+            "\t- Set \"${group_key}\", rule at index ${rule_idx}, range key \"${rk}\" (range size is ${rv.to_inclusive - rv.from_inclusive + 1}, \"from_to\" value of ${rv.from_inclusive} is not a multiple of this)"
+            if !contains(group.base2_align_range_keys, rk) ? false : (
+              rv.from_inclusive % (rv.to_inclusive - rv.from_inclusive + 1) != 0
+            )
+          ]
+        ]
+      ]))
+    }"
+  }
+
+  // Ensure that for all base2-aligned ranges, there are no null from/to values.
+  validation {
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets :
+      [
+        for rule in group.rules :
+        [
+          for rk, rv in rule.ranges :
+          null
+          if !contains(group.base2_align_range_keys, rk) ? false : rv.from_inclusive == null ? true : rv.to_inclusive == null
+        ]
+      ]
+    ]))
+    error_message = "For each rule, no base2-aligned ranges can have \"null\" values for the \"from_inclusive\" or \"to_inclusive\" fields. The input does not meet this requirement:\n${
+      join("\n", flatten([
+        for group_key, group in var.rule_sets :
+        [
+          for rule_idx, rule in group.rules :
+          [
+            for rk, rv in rule.ranges :
+            "\t- Set \"${group_key}\", rule at index ${rule_idx}, range key \"${rk}\" (null values: ${join(", ", flatten([rv.from_inclusive == null ? ["from_inclusive"] : [], rv.to_inclusive == null ? ["to_inclusive"] : []]))})"
+            if !contains(group.base2_align_range_keys, rk) ? false : rv.from_inclusive == null ? true : rv.to_inclusive == null
+          ]
+        ]
+      ]))
+    }"
+  }
+
+  // Ensure that for all base2-aligned ranges, there are rules that are missing a range that another rule has
+  validation {
+    condition = 0 == length(flatten([
+      for group_key, group in var.rule_sets :
+      [
+        for rule in group.rules :
+        null
+        if length(setsubtract(distinct(flatten([
+          for rule2 in group.rules :
+          [
+            for rk in keys(rule2.ranges) :
+            rk
+            if contains(group.base2_align_range_keys, rk)
+          ]
+        ])), keys(rule.ranges))) > 0
+      ]
+    ]))
+    error_message = "For each set, all rules must have the same base2-aligned ranges. The input does not meet this requirement:\n${
+      join("\n", flatten([
+        for group_key, group in var.rule_sets :
+        [
+          for rule_idx, rule in group.rules :
+          "\t- Set \"${group_key}\", rule at index ${rule_idx} (missing base2-aligned range keys found in other rules in the same set: ${join(", ", [
+            for rk in sort(setsubtract(distinct(flatten([
+              for rule2 in group.rules :
+              [
+                for rk in keys(rule2.ranges) :
+                rk
+                if contains(group.base2_align_range_keys, rk)
+              ]
+            ])), keys(rule.ranges))) :
+            "\"${rk}\""
+          ])})"
+          if length(setsubtract(distinct(flatten([
+            for rule2 in group.rules :
+            [
+              for rk in keys(rule2.ranges) :
+              rk
+              if contains(group.base2_align_range_keys, rk)
+            ]
+          ])), keys(rule.ranges))) > 0
+        ]
+      ]))
+    }"
+  }
+
+  // Ensure there aren't too many range keys
+  validation {
+    condition = 0 == length([
+      for group_key, group in var.rule_sets :
+      null
+      if length(distinct(flatten([
+        for rule in group.rules :
+        keys(rule.ranges)
+      ]))) > local.max_number_of_ranges
+    ])
+    error_message = "For each rule set, there can be no more than ${local.max_number_of_ranges} distinct range keys in the entire set. The input does not meet this requirement:\n${
+      join("\n", [
+        for group_key, group in var.rule_sets :
+        "\t- Set \"${group_key}\" has ${length(distinct(flatten([
+          for rule in group.rules :
+          keys(rule.ranges)
+        ])))} range keys"
+        if length(distinct(flatten([
+          for rule in group.rules :
+          keys(rule.ranges)
+        ]))) > local.max_number_of_ranges
+    ])}"
+  }
 }

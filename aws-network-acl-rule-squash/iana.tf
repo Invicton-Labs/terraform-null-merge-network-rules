@@ -1,6 +1,18 @@
 locals {
-  // https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+  // A list of all valid protocol strings
+  all_protocol_strings = distinct(flatten([
+    for v in local.iana_protocol_equivalencies :
+    [
+      for alt in v.alternatives :
+      upper(alt)
+    ]
+  ]))
+
   iana_protocol_equivalencies = [
+    // This is specific to AWS
+    { primary = "-1", alternatives = ["ALL"] },
+
+    // https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
     { primary = "0", alternatives = ["HOPOPT"] },
     { primary = "1", alternatives = ["ICMP"] },
     { primary = "2", alternatives = ["IGMP"] },
